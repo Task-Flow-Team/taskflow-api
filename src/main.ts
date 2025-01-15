@@ -14,12 +14,18 @@ async function bootstrap() {
     throw new Error('JWT_SECRET is not set in the environment variables');
   }
   
+  const redisUrl = new URL(configService.get('REDIS_URL'));
+
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.REDIS,
     options: {
-      host: 'localhost',
-      port: 6379,
-    },
+      host: redisUrl.hostname,
+      port: parseInt(redisUrl.port),
+      password: redisUrl.password,
+      username: redisUrl.username,
+      retryAttempts: 5,
+      retryDelay: 3000
+    }
   });
 
   await app.startAllMicroservices();
