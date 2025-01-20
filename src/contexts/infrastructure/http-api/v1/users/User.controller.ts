@@ -9,7 +9,7 @@ import {
     HttpCode,
     BadRequestException,
     UseGuards,
-    Request,
+    Request, Delete,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'; // Import para Swagger
 import { JwtAuthGuard } from '@/contexts/shared/lib/guards';
@@ -45,31 +45,17 @@ export class UserController {
         return this.getAllUsersUseCase.run();
     }
 
-    @Post('change-password')
-    @HttpCode(HttpStatus.OK)
-    async changePassword(
-      @UserDecorator('userId') user,
-      @Body() changePasswordDto: AuthDtos.ChangePasswordDto,
-    ): Promise<{ message: string }> {
-        const userId = user.userId;
-        await this.changePasswordUseCase.run(
-          userId,
-          changePasswordDto.oldPassword,
-          changePasswordDto.newPassword,
-        );
-        return { message: 'Password changed successfully' };
-    }
-
     @Get(':id')
     @HttpCode(HttpStatus.OK)
+    @Roles('ADMIN')
     async getUserById(@Param('id') userId: string): Promise<User> {
         if (!userId) throw new BadRequestException('Se requiere el ID del usuario');
-        const user = await this.getUserByIdUseCase.run(userId);
-        return user;
+        return await this.getUserByIdUseCase.run(userId);
     }
 
     @Get('email/:email')
     @HttpCode(HttpStatus.OK)
+    @Roles('ADMIN')
     async getUserByEmail(@Param('email') email: string): Promise<User> {
         if (!email) throw new BadRequestException('Se requiere el correo electrónico');
         const user = await this.getUserByEmailUseCase.run(email);
@@ -79,6 +65,7 @@ export class UserController {
 
     @Get('username/:username')
     @HttpCode(HttpStatus.OK)
+    @Roles('ADMIN')
     async getUserByUsername(@Param('username') username: string): Promise<User> {
         if (!username) throw new BadRequestException('Se requiere el nombre de usuario');
         const user = await this.getUserByUsernameUseCase.run(username);
@@ -86,7 +73,7 @@ export class UserController {
         return user;
     }
 
-    @Post('delete/:id')
+    @Delete(':id')
     @Roles('ADMIN')
     @HttpCode(HttpStatus.OK)
     async deleteUser(@Param('id') userId: string): Promise<{ message: string }> {
@@ -94,20 +81,37 @@ export class UserController {
         return this.deleteUserUseCase.run(userId);
     }
 
+    @Post('change-password')
+    @HttpCode(HttpStatus.OK)
+    async changePassword(
+      @UserDecorator('userId') userId: string,
+      @Body() changePasswordDto: AuthDtos.ChangePasswordDto,
+    ): Promise<{ message: string }> {
+        await this.changePasswordUseCase.run(
+          userId,
+          changePasswordDto.oldPassword,
+          changePasswordDto.newPassword,
+        );
+        return { message: 'Password changed successfully' };
+    }
+
     @Get('profile/me')
     @HttpCode(HttpStatus.OK)
-    async getUserProfile(@UserDecorator('userId') user): Promise<UserProfile> {
-        console.log('Payload completo:', user);
-        const userId = user.userId;
+    async getUserProfile(@UserDecorator('userId') userId: string): Promise<UserProfile> {
+        console.log('Payload completo:', userId);
         if (!userId) throw new BadRequestException('Se requiere el ID del usuario');
         return this.getProfileUseCase.run(userId);
     }
 
     @Post('profile/update')
     @HttpCode(HttpStatus.OK)
-    async updateUserProfile(@UserDecorator('userId') user, @Body() profileDto: UserProfileWithoutCreatedAt): Promise<{ message: string; profile: UserProfile }> {
-        const userId = user.userId;
-        if (!userId) throw new BadRequestException('Se requiere el ID del usuario');
+    async updateUserProfile(
+      @UserDecorator('userId') userId: string,
+      @Body() profileDto: UserProfileWithoutCreatedAt,
+    ): Promise<{ message: string; profile: UserProfile }> {
+        if (!userId) {
+            throw new BadRequestException('Se requiere el ID del usuario');
+        }
         const updatedProfile = await this.updateProfileUseCase.run(userId, profileDto);
         return {
             message: 'Perfil actualizado exitosamente',
@@ -117,16 +121,14 @@ export class UserController {
 
     @Get('settings/me')
     @HttpCode(HttpStatus.OK)
-    async getUserSettings(@UserDecorator('email') user): Promise<UserSettings> {
-        const userEmail = user.email;
+    async getUserSettings(@UserDecorator('email') userEmail: string): Promise<UserSettings> {
         if (!userEmail) throw new BadRequestException('Se requiere el correo electrónico del usuario');
         return this.getSettingsUseCase.run(userEmail);
     }
 
     @Post('settings/update')
     @HttpCode(HttpStatus.OK)
-    async updateUserSettings(@UserDecorator('userId') user, @Body() settingsDto: UserSettings): Promise<{ message: string; settings: UserSettings }> {
-        const userId = user.userId;
+    async updateUserSettings(@UserDecorator('userId') userId: string, @Body() settingsDto: UserSettings): Promise<{ message: string; settings: UserSettings }> {
         if (!userId) throw new BadRequestException('Se requiere el ID del usuario');
         const updatedSettings = await this.updateSettingsUseCase.run(userId, settingsDto);
         return {
