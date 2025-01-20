@@ -48,16 +48,10 @@ export class UserController {
     @Post('change-password')
     @HttpCode(HttpStatus.OK)
     async changePassword(
-      @Request() req,
+      @UserDecorator('userId') user,
       @Body() changePasswordDto: AuthDtos.ChangePasswordDto,
     ): Promise<{ message: string }> {
-        // Verificar que el guard haya inyectado req.user
-        console.log('Decoded User:', req.user);
-        const userId = req.user?.userId;
-        if (!userId) {
-            throw new Error('User ID not found in the token');
-        }
-
+        const userId = user.userId;
         await this.changePasswordUseCase.run(
           userId,
           changePasswordDto.oldPassword,
@@ -102,16 +96,17 @@ export class UserController {
 
     @Get('profile/me')
     @HttpCode(HttpStatus.OK)
-    async getUserProfile(@UserDecorator() user): Promise<UserProfile> {
-        const userId = user.id;
+    async getUserProfile(@UserDecorator('userId') user): Promise<UserProfile> {
+        console.log('Payload completo:', user);
+        const userId = user.userId;
         if (!userId) throw new BadRequestException('Se requiere el ID del usuario');
         return this.getProfileUseCase.run(userId);
     }
 
     @Post('profile/update')
     @HttpCode(HttpStatus.OK)
-    async updateUserProfile(@UserDecorator() user, @Body() profileDto: UserProfileWithoutCreatedAt): Promise<{ message: string; profile: UserProfile }> {
-        const userId = user.id;
+    async updateUserProfile(@UserDecorator('userId') user, @Body() profileDto: UserProfileWithoutCreatedAt): Promise<{ message: string; profile: UserProfile }> {
+        const userId = user.userId;
         if (!userId) throw new BadRequestException('Se requiere el ID del usuario');
         const updatedProfile = await this.updateProfileUseCase.run(userId, profileDto);
         return {
@@ -122,7 +117,7 @@ export class UserController {
 
     @Get('settings/me')
     @HttpCode(HttpStatus.OK)
-    async getUserSettings(@UserDecorator() user): Promise<UserSettings> {
+    async getUserSettings(@UserDecorator('email') user): Promise<UserSettings> {
         const userEmail = user.email;
         if (!userEmail) throw new BadRequestException('Se requiere el correo electrónico del usuario');
         return this.getSettingsUseCase.run(userEmail);
@@ -130,8 +125,8 @@ export class UserController {
 
     @Post('settings/update')
     @HttpCode(HttpStatus.OK)
-    async updateUserSettings(@UserDecorator() user, @Body() settingsDto: UserSettings): Promise<{ message: string; settings: UserSettings }> {
-        const userId = user.id;
+    async updateUserSettings(@UserDecorator('userId') user, @Body() settingsDto: UserSettings): Promise<{ message: string; settings: UserSettings }> {
+        const userId = user.userId;
         if (!userId) throw new BadRequestException('Se requiere el ID del usuario');
         const updatedSettings = await this.updateSettingsUseCase.run(userId, settingsDto);
         return {
