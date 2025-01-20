@@ -28,7 +28,6 @@ export class AuthController {
     private readonly verifyEmailUseCase: AuthUseCases.VerifyEmailUseCase,
     private readonly resendEmailVerificationUseCase: AuthUseCases.ResendEmailVerificationUseCase,
     private readonly logoutUseCase: AuthUseCases.LogoutUseCase,
-    private readonly changePasswordUseCase: AuthUseCases.ChangePasswordUseCase,
     private readonly resetPasswordUseCase: AuthUseCases.ResetPasswordUseCase,
   ) {}
 
@@ -89,22 +88,6 @@ export class AuthController {
       verifyEmailBody,
     );
     return { message: 'Verification email successfully re-sent' };
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Post('change-password')
-  @HttpCode(HttpStatus.OK)
-  async changePassword(
-    @Request() req,
-    @Body() changePasswordDto: AuthDtos.ChangePasswordDto,
-  ): Promise<{ message: string }> {
-    const userId = req.user.id;
-    await this.changePasswordUseCase.run(
-      userId,
-      changePasswordDto.oldPassword,
-      changePasswordDto.newPassword,
-    );
-    return { message: 'Password changed successfully' };
   }
 
   @Post('reset-password')

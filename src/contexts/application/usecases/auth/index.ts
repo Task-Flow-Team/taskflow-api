@@ -4,6 +4,6 @@ export * from './login/login.use-case';
 export * from './logout/logout.use-case';
 export * from './register/register.use-case';
 export * from '../users/resendEmail/resendEmail.use-case';
-export * from './resetPassword/resetPassword.use-case';
+export * from '@/contexts/application/usecases/users/resetPassword/resetPassword.use-case';
 export * from './validateUser/validateUser.use-case';
 export * from '../users/verifyEmail/verifyEmail.use-case';

@@ -37,16 +37,29 @@ export class AuthService implements AuthServicePort {
   }
 
   async login(user: User): Promise<AccessToken> {
+    if (!user || !user.email) {
+      throw new BadRequestException('Valid user information is required');
+    }
 
-    // Check if the user is provided
-    if(!user) throw new BadRequestException('User is required');
+    // Si el ID del usuario no está presente, consultar en la base de datos
+    if (!user.id) {
+      const userFromDb = await this.userRepository.findByEmail(user.email);
+      if (!userFromDb) {
+        throw new NotFoundException('User not found');
+      }
+      user.id = userFromDb.id; // Actualizar el ID en el objeto `user`
+    }
 
-    // Create a payload object with the user's email and the user's ID
-    const payload = { email: user.email, sub: user.id };
+    // Crear el payload con el ID y el email del usuario
+    const payload = { userId: user.id, email: user.email };
 
-    // Generate a random access token and return it
+    console.log("Payload generado:", JSON.stringify(payload, null, 2));
+
+    // Generar y retornar el token de acceso
     return { access_token: this.jwtService.sign(payload) };
   }
+
+
 
   async logout(token: string): Promise<{message: string}> {
 

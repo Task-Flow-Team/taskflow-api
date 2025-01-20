@@ -15,6 +15,18 @@ async function bootstrap() {
     throw new Error('JWT_SECRET is not set in the environment variables');
   }
 
+  // Configurar CORS
+  app.enableCors({
+    origin: [
+      'http://localhost:3000', // Tu aplicación
+      'http://localhost:4200', // Tu frontend (Angular o similar)
+      'http://localhost:3000/api/docs', // Swagger UI (aunque no es estrictamente necesario si está en el mismo servidor)
+    ],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Métodos permitidos
+    credentials: true, // Permitir envío de cookies
+  });
+
+
   // Configurar Redis
   const redisUrl = new URL(configService.get<string>('REDIS_URL'));
   app.connectMicroservice<MicroserviceOptions>({
@@ -37,8 +49,15 @@ async function bootstrap() {
     .addBearerAuth() // Agregar soporte para JWT
     .build();
 
+
   const document = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('api/docs', app, document); // Documentación en /api/docs
+
+  SwaggerModule.setup('api/docs', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true, // Mantener la autenticación
+    },
+    customSiteTitle: 'Taskflow API Docs',
+  });
 
   // Iniciar microservicios y aplicación
   await app.startAllMicroservices();
