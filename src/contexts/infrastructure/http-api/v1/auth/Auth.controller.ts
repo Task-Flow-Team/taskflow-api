@@ -10,7 +10,7 @@ import {
   Get,
   HttpStatus,
   HttpCode,
-  Request,
+  Request, Req,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import * as AuthUseCases from '@/contexts/application/usecases/auth';
@@ -18,6 +18,8 @@ import { Public } from '@/contexts/shared/lib/decorators';
 import { API_VERSION } from '@/contexts/infrastructure/http-api/v1/route.constants';
 import * as AuthDtos from './dtos';
 import { JwtAuthGuard } from '@/contexts/shared/lib/guards';
+import { ApiBearerAuth, ApiBody } from '@nestjs/swagger';
+import { LoginRequestDto } from './dtos';
 
 @Public()
 @Controller(`${API_VERSION}/auth`)
@@ -51,13 +53,17 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('logout')
+  @ApiBearerAuth() // Indica que el endpoint usa Bearer Token
   @HttpCode(HttpStatus.OK)
-  async logout(
-    @Headers('authorization') token: string,
-  ): Promise<{ message: string }> {
-    token = token.replace('Bearer ', '');
-    await this.logoutUseCase.run(token);
-    return { message: 'Successfully Logged Out' };
+  async logout(@Req() request: Request): Promise<{ message: string }> {
+    const authHeader = request.headers['authorization']; // Obtén el encabezado Authorization
+    const token = authHeader?.split(' ')[1]; // Extrae el token
+    if (!token) {
+      throw new Error('Token no proporcionado'); // Manejo de error si no hay token
+    }
+
+    await this.logoutUseCase.run(token); // Lógica del caso de uso
+    return { message: 'Successfully Logged Out' }; // Respuesta
   }
 
   @Post('verify-email')

@@ -3,10 +3,12 @@ import { API_VERSION } from '@/contexts/infrastructure/http-api/v1/';
 import { CreateSubTaskDto, UpdateSubTaskDto } from '@/contexts/infrastructure/http-api/v1/subtasks/dtos';
 import * as SubTaskUseCases from '@/contexts/application/usecases/subtasks';
 import { Roles, User as UserDecorator } from '@/contexts/shared/lib/decorators';
-import { JwtAuthGuard } from '@/contexts/shared/lib/guards';
+import { JwtAuthGuard} from '@/contexts/shared/lib/guards';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @UseGuards(JwtAuthGuard)
 @Controller(`${API_VERSION}/subtasks`)
+@ApiBearerAuth()
 export class SubTaskController {
 
   // Implements the neccessaries sub tasks use cases

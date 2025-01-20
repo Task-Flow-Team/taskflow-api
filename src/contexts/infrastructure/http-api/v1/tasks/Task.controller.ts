@@ -5,9 +5,11 @@ import * as TaskUseCases from '@/contexts/application/usecases/tasks';
 import { Roles, User as UserDecorator } from '@/contexts/shared/lib/decorators';
 import { JwtAuthGuard } from '@/contexts/shared/lib/guards';
 import { Task } from '@/contexts/domain/models';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @UseGuards(JwtAuthGuard)
 @Controller(`${API_VERSION}/tasks`)
+@ApiBearerAuth()
 export class TaskController {
 
   // Implements the neccesaries use cases
