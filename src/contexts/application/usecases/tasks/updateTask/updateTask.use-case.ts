@@ -9,10 +9,10 @@ export class UpdateTaskUseCase {
   constructor(@Inject('taskRepository') private taskRepository: TaskRepository) {}
   
   // This function takes a taksId as a parameter and returns the task updated
-  async run(taskId: string, task: Partial<Task>): Promise<Task> {
+  async run(userId: string, taskId: string, task: Partial<Task>): Promise<Task> {
 
     // Call the repository method to update a task
-    return await this.taskRepository.updateTask(taskId, task);
+    return await this.taskRepository.updateTask(userId, taskId, task);
 
   }
 }

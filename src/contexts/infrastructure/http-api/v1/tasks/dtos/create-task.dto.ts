@@ -11,14 +11,6 @@ export class CreateTaskDto {
   workspace_id: string;
 
   @ApiProperty({
-    description: 'UUID del usuario que creó la tarea.',
-    example: '550e8400-e29b-41d4-a716-446655440111',
-  })
-  @IsString()
-  @IsUUID()
-  createdBy: string;
-
-  @ApiProperty({
     description: 'Título de la tarea.',
     example: 'Desarrollar API de autenticación',
   })

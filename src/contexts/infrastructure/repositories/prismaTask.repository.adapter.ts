@@ -157,7 +157,7 @@ export class PrismaTaskRepository implements TaskRepository {
 
   }
 
-  async updateTask(taskId: string, task: Partial<Task>): Promise<Task> {
+  async updateTask(userId: string, taskId: string, task: Partial<Task>): Promise<Task> {
 
     // Check if taskId is provided
     if (!taskId) throw new BadRequestException('Task ID is required');
@@ -169,8 +169,8 @@ export class PrismaTaskRepository implements TaskRepository {
     if (!task.workspace_id) throw new BadRequestException('Workspace ID in Task Object is required');
 
     // Check if user exists, if not throw an NotFoundException
-    const user = await this.db.user.findUnique({ where: { id: task.createdBy } });
-    if (!user) throw new NotFoundException(`User with ID ${task.createdBy} not found`);
+    const user = await this.db.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException(`User with ID ${userId} not found`);
 
     // Check if workspace exists, if not throw an NotFoundException
     const workspace = await this.db.workspace.findUnique({

@@ -2,7 +2,6 @@ import { TaskStatus } from "@/contexts/shared/lib/types"
 
 export interface Task {
     task_id: string,
-    createdBy: string,
     workspace_id: string,
     title: string,
     description: string
@@ -15,4 +14,4 @@ export interface Task {
     assignedTo: string
 }
 
-export type CreateTaskBody = Pick<Task, 'title' | 'description' | 'status' | 'priority' | 'assignedTo' | 'createdBy' | 'workspace_id' | 'due_date'>;
+export type CreateTaskBody = Pick<Task, 'title' | 'description' | 'status' | 'priority' | 'assignedTo' | 'workspace_id' | 'due_date'>;
