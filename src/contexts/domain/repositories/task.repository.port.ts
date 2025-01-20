@@ -123,26 +123,27 @@ export abstract class TaskRepository {
 
     /**
      * Method for updating a task by ID
-     * 
+     *
+     * @param userId
      * @param taskId - The ID of the task we want to update.
-     * 
+     *
      * @param task - The task we want to update as partial object.
-     * 
+     *
      * @returns {Promise<Task>} The task that was updated.
-     * 
+     *
      * @throws BadRequestException If the taskId is not provided.
-     * 
+     *
      * @throws BadRequestException If the task object is not provided.
-     * 
+     *
      * @throws BadRequestException If the workspaceId is not provided in the task object.
-     * 
+     *
      * @throws NotFoundException If the createdBy user of the task is not found.
-     * 
+     *
      * @throws NotFoundException If the workspace with the provided workspaceId is not found.
-     * 
+     *
      * @throws NotFoundException If the task with the provided taskId is not found.
-     * 
+     *
      * @throws ForbiddenException If the user is not authorized to update the task or hasn't admin role in the workspace.
      */
-    abstract updateTask(taskId: string, task: Partial<Task>): Promise<Task>;
+    abstract updateTask(userId: string, taskId: string, task: Partial<Task>): Promise<Task>;
 }

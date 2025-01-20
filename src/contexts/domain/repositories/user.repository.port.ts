@@ -1,6 +1,6 @@
 import {
   CreateUserDTO,
-  User,
+  User, User4Token,
   UserProfile,
   UserSettings,
   verificationToken,
@@ -199,4 +199,8 @@ export abstract class UserRepository {
    * @returns {Promise<verificationToken>} Returns a promise with the verification token object.
    */
   abstract findByVerificationToken(token: string): Promise<verificationToken>;
+
+  abstract findByEmail(email: string): Promise<User4Token>;
 }
+
+

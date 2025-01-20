@@ -20,7 +20,6 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-
   imports: [
     PassportModule,
     JwtModule.registerAsync({
@@ -28,7 +27,7 @@ import { JwtModule } from '@nestjs/jwt';
       useFactory: async (configService: ConfigService) => ({
         global: true,
         secret: configService.get<string>('JWT_SECRET'),
-        signOptions: { expiresIn: '60m' },
+        signOptions: { expiresIn: '6h' },
       }),
       inject: [ConfigService],
     }),
@@ -44,14 +43,8 @@ import { JwtModule } from '@nestjs/jwt';
             user: configService.get<string>('MAILJET_PUBLIC_KEY'),
             pass: configService.get<string>('MAILJET_SECRET_KEY'),
           },
-          logger:
-            configService.get<string>('NODE_ENV') == 'development'
-              ? true
-              : false,
-          debug:
-            configService.get<string>('NODE_ENV') == 'development'
-              ? true
-              : false,
+          logger: configService.get<string>('NODE_ENV') === 'development',
+          debug: configService.get<string>('NODE_ENV') === 'development',
         },
         defaults: {
           from: `"${process.env.MAILJET_FROM_NAME}" <${process.env.MAILJET_FROM_EMAIL}>`,
@@ -79,7 +72,7 @@ import { JwtModule } from '@nestjs/jwt';
     }),
   ],
 
-  // 
+  //
   providers: [
 
     // Add the use cases to the providers array because otherwise they can't be exported.
@@ -124,7 +117,7 @@ import { JwtModule } from '@nestjs/jwt';
       provide: 'mailService',
       useClass: services.NestMailRepository,
     },
-    
+
     // Add the ConfigService for the use in the use-cases
     {
       provide: 'configService',

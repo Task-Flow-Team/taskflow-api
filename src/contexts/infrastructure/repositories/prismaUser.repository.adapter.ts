@@ -8,7 +8,7 @@ import { UserRepository } from '@/contexts/domain/repositories/';
 
 import {
   CreateUserDTO,
-  User,
+  User, User4Token,
   UserProfile,
   UserSettings,
   UserWithoutIdAndCreatedAt,
@@ -61,6 +61,29 @@ export class PrismaUserRepository implements UserRepository {
     });
     
   }
+
+  async findByEmail(email: string): Promise<User4Token> {
+    // Validar que se proporcione el email
+    if (!email) throw new BadRequestException('Email is required');
+
+    // Consultar el usuario en la base de datos
+    const user = await this.db.user.findUnique({
+      where: { email },
+      select: {
+        id: true,
+        email: true,
+      },
+    });
+
+    // Si no se encuentra, lanzar una excepción
+    if (!user) {
+      throw new NotFoundException(`User with email ${email} not found`);
+    }
+
+    // Retorna solo las propiedades necesarias
+    return user;
+  }
+
 
   async findUniqueById(userId: string): Promise<User> {
 

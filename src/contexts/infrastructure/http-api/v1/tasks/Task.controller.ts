@@ -2,12 +2,14 @@ import { Controller, Get, Post, Put, Delete, Body, Param, HttpStatus, HttpCode, 
 import { UpdateTaskDto, CreateTaskDto } from '@/contexts/infrastructure/http-api/v1/tasks/dtos';
 import { API_VERSION } from '@/contexts/infrastructure/http-api/v1/';
 import * as TaskUseCases from '@/contexts/application/usecases/tasks';
-import { Roles, User as UserDecorator } from '@/contexts/shared/lib/decorators';
+import { Roles, User, User as UserDecorator } from '@/contexts/shared/lib/decorators';
 import { JwtAuthGuard } from '@/contexts/shared/lib/guards';
 import { Task } from '@/contexts/domain/models';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @UseGuards(JwtAuthGuard)
 @Controller(`${API_VERSION}/tasks`)
+@ApiBearerAuth()
 export class TaskController {
 
   // Implements the neccesaries use cases
@@ -27,8 +29,8 @@ export class TaskController {
   @Post()
   @UsePipes(new ValidationPipe())
   @HttpCode(HttpStatus.CREATED)
-  async createTask(@UserDecorator() user, @Body() taskDto: CreateTaskDto) {
-    const task = await this.createTaskUseCase.run(user.id, taskDto);
+  async createTask(@UserDecorator('userId') userId: string, @Body() taskDto: CreateTaskDto) {
+    const task = await this.createTaskUseCase.run(userId, taskDto);
     return {
       message: 'Task created successfully',
       task,
@@ -82,8 +84,8 @@ export class TaskController {
   @Put(':id')
   @UsePipes(new ValidationPipe())
   @HttpCode(HttpStatus.OK)
-  async updateTask(@Param('id') taskId: string, @Body() taskDto: UpdateTaskDto) {
-    const updatedTask = await this.updateTaskUseCase.run(taskId, taskDto);
+  async updateTask(@UserDecorator('userId') userId: string, @Param('id') taskId: string, @Body() taskDto: UpdateTaskDto) {
+    const updatedTask = this.updateTaskUseCase.run(userId, taskId, taskDto);
     return {
       message: 'Task updated successfully',
       task: updatedTask,

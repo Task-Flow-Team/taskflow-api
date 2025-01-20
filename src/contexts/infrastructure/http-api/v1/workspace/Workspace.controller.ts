@@ -5,9 +5,11 @@ import * as WorkspaceUseCases from '@/contexts/application/usecases/workspaces';
 import { User as UserDecorator, Roles } from '@/contexts/shared/lib/decorators';
 import { JwtAuthGuard } from '@/contexts/shared/lib/guards';
 import { Workspace } from '@/contexts/domain/models';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @UseGuards(JwtAuthGuard)
 @Controller(`${API_VERSION}/workspaces`)
+@ApiBearerAuth()
 export class WorkspaceController {
   
   constructor(
@@ -28,14 +30,13 @@ export class WorkspaceController {
   @Post()
   @UsePipes(new ValidationPipe())
   @HttpCode(HttpStatus.CREATED)
-  async createWorkspace(@UserDecorator() user, @Body() workspaceDto: CreateWorkspaceDto) {
-    const workspace = await this.createWorkspaceUseCase.run(user.id, workspaceDto.name, workspaceDto.description);
+  async createWorkspace(@UserDecorator('userId') userId: string, @Body() workspaceDto: CreateWorkspaceDto) {
+    const workspace = await this.createWorkspaceUseCase.run(userId, workspaceDto.name, workspaceDto.description);
     return {
       message: 'Workspace created successfully',
       workspace,
     };
   }
-
 
   // Get all workspaces route
   @Get()
@@ -48,8 +49,9 @@ export class WorkspaceController {
   // Get all workspaces of the user (as owner or collaborator)
   @Get('my-workspaces')
   @HttpCode(HttpStatus.OK)
-  async getMyWorkspaces(@UserDecorator() user): Promise<Workspace[]> {
-    return await this.getWorkspacesOfUserUseCase.run(user.id);
+  async getMyWorkspaces(@UserDecorator('userId') userId: string): Promise<Workspace[]> {
+    console.log(userId)
+    return await this.getWorkspacesOfUserUseCase.run(userId);
   }
 
   // Get all workspaces of a user as collaborator

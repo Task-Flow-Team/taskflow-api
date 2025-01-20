@@ -90,7 +90,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     if (requiredRoles && requiredRoles.length > 0) {
 
       // Get the user with the email from the request and check if it exists
-      const user = await this.getUserByEmail.execute(request.user.email);
+      const user = await this.getUserByEmail.run(request.user.email);
       if (!user) throw new UnauthorizedException(`User with email ${request.user.email} not found`);
 
       // Compare the user roles with the required roles and check if they match

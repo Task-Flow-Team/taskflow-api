@@ -14,6 +14,8 @@ export interface User {
   roles: Role[];
 }
 
+export type User4Token = Pick<User, 'email' | 'id'>
+
 export type UserProfile = Pick<User, 'username' | 'profile_picture_url' | 'banner_picture_url' | 'email' | 'name' | 'created_at'>;
 
 export type UserProfileWithoutCreatedAt = Omit<UserProfile, 'created_at'>;
