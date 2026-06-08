@@ -4,4 +4,4 @@ export * from './subtask.entity';
 export * from './tags.entity';
 export * from './task.entity';
 export * from './user.entity';
-export * from './workspsace.entity';
+export * from './workspace.entity';
