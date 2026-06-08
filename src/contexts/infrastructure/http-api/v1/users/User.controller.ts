@@ -2,6 +2,7 @@ import {
     Controller,
     Get,
     Post,
+    Patch,
     HttpStatus,
     Body,
     Param,
@@ -103,7 +104,7 @@ export class UserController {
         return this.getProfileUseCase.run(userId);
     }
 
-    @Post('profile/update')
+    @Patch('profile/me')
     @HttpCode(HttpStatus.OK)
     async updateUserProfile(
       @UserDecorator('userId') userId: string,
@@ -126,7 +127,7 @@ export class UserController {
         return this.getSettingsUseCase.run(userEmail);
     }
 
-    @Post('settings/update')
+    @Patch('settings/me')
     @HttpCode(HttpStatus.OK)
     async updateUserSettings(@UserDecorator('userId') userId: string, @Body() settingsDto: UpdateUserSettingsDto): Promise<{ message: string; settings: any }> {
         if (!userId) throw new BadRequestException('User ID is required');
