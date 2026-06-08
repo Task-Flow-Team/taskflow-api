@@ -1,4 +1,5 @@
 export * from './activityLog.entity';
+export * from './analytics.entity';
 export * from './notification.entity';
 export * from './auth.entity';
 export * from './comment.entity';

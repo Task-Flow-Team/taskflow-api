@@ -1,4 +1,5 @@
 export * from './activityLog.repository.port';
+export * from './analytics.repository.port';
 export * from './notification.repository.port';
 export * from './comment.repository.port';
 export * from './subtask.repository.port';

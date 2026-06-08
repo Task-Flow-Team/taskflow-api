@@ -7,6 +7,7 @@ import * as tagsUseCases from '@/contexts/application/usecases/tags';
 import * as tasksUseCases from '@/contexts/application/usecases/tasks';
 import * as commentUseCases from '@/contexts/application/usecases/comments';
 import * as notificationUseCases from '@/contexts/application/usecases/notifications';
+import * as analyticsUseCases from '@/contexts/application/usecases/analytics';
 import * as repositories from '@/contexts/infrastructure/repositories';
 import * as services from '@/contexts/infrastructure/services';
 
@@ -57,6 +58,7 @@ import { JwtModule } from '@nestjs/jwt';
     ...Object.values(tagsUseCases),
     ...Object.values(commentUseCases),
     ...Object.values(notificationUseCases),
+    ...Object.values(analyticsUseCases),
 
     // Add all strategies and services for the use in use-cases
     PrismaService,
@@ -101,6 +103,10 @@ import { JwtModule } from '@nestjs/jwt';
       useClass: repositories.PrismaNotificationRepository,
     },
     {
+      provide: 'analyticsRepository',
+      useClass: repositories.PrismaAnalyticsRepository,
+    },
+    {
       provide: 'mailService',
       useClass: services.ResendMailService,
     },
@@ -122,6 +128,7 @@ import { JwtModule } from '@nestjs/jwt';
     ...Object.values(tagsUseCases),
     ...Object.values(commentUseCases),
     ...Object.values(notificationUseCases),
+    ...Object.values(analyticsUseCases),
   ],
 
 })
