@@ -1,8 +1,8 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, HttpStatus, HttpCode, UsePipes, ValidationPipe, BadRequestException, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, HttpStatus, HttpCode, UsePipes, ValidationPipe, BadRequestException, UseGuards, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { UpdateTaskDto, CreateTaskDto } from '@/contexts/infrastructure/http-api/v1/tasks/dtos';
 import { API_VERSION } from '@/contexts/infrastructure/http-api/v1/';
 import * as TaskUseCases from '@/contexts/application/usecases/tasks';
-import { Roles, User, User as UserDecorator } from '@/contexts/shared/lib/decorators';
+import { Roles, User as UserDecorator } from '@/contexts/shared/lib/decorators';
 import { JwtAuthGuard } from '@/contexts/shared/lib/guards';
 import { Task } from '@/contexts/domain/models';
 import { ApiBearerAuth } from '@nestjs/swagger';
@@ -37,10 +37,10 @@ export class TaskController {
     };
   }
 
-  // Get all tasks assigned to a user
-  @Get('assigned-to/:userId')
+  // Get all tasks assigned to a user (userId from JWT — IDOR fix)
+  @Get('assigned-to')
   @HttpCode(HttpStatus.OK)
-  async getAllTasksAssignedToUser(@Param('userId') userId: string): Promise<Task[]> {
+  async getAllTasksAssignedToUser(@UserDecorator('userId') userId: string): Promise<Task[]> {
     return await this.getAllTasksAssignedToUserUseCase.run(userId);
   }
 
@@ -51,17 +51,17 @@ export class TaskController {
     return await this.getAllTasksByWorkspaceUseCase.run(workspaceId);
   }
 
-  // Get all tasks created by a user
-  @Get('created-by/:userId')
+  // Get all tasks created by a user (userId from JWT — IDOR fix)
+  @Get('created-by')
   @HttpCode(HttpStatus.OK)
-  async getAllTasksCreatedByUser(@Param('userId') userId: string): Promise<Task[]> {
+  async getAllTasksCreatedByUser(@UserDecorator('userId') userId: string): Promise<Task[]> {
     return await this.getAllTasksCreatedByUserUseCase.run(userId);
   }
 
-  // Get all tasks of a user
-  @Get('of/:userId')
+  // Get all tasks of a user (userId from JWT — IDOR fix)
+  @Get('of')
   @HttpCode(HttpStatus.OK)
-  async getAllTasksOfUser(@Param('userId') userId: string): Promise<Task[]> {
+  async getAllTasksOfUser(@UserDecorator('userId') userId: string): Promise<Task[]> {
     return await this.getAllTasksOfUserUseCase.run(userId);
   }
 
@@ -85,20 +85,26 @@ export class TaskController {
   @UsePipes(new ValidationPipe())
   @HttpCode(HttpStatus.OK)
   async updateTask(@UserDecorator('userId') userId: string, @Param('id') taskId: string, @Body() taskDto: UpdateTaskDto) {
-    const updatedTask = this.updateTaskUseCase.run(userId, taskId, taskDto);
+    const updatedTask = await this.updateTaskUseCase.run(userId, taskId, taskDto);
     return {
       message: 'Task updated successfully',
       task: updatedTask,
     };
   }
 
-  // Delete an existing task
+  // Delete an existing task (ownership check)
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
-  async deleteTask(@Param('id') taskId: string) {
+  async deleteTask(
+    @UserDecorator('userId') userId: string,
+    @Param('id') taskId: string,
+  ) {
+    const task = await this.getTaskByIdUseCase.run(taskId);
+    if (!task) throw new NotFoundException('Task not found');
+    if (task.createdBy !== userId) throw new ForbiddenException('You do not have permission to delete this task');
     await this.deleteTaskUseCase.run(taskId);
     return {
-      message: 'Tarea eliminada exitosamente',
+      message: 'Task deleted successfully',
     };
   }
 }
