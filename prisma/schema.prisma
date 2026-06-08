@@ -32,7 +32,8 @@ model User {
   emailVerified       DateTime?
   roles               Role[]    @default([USER])
   workspaces          Workspace[]
-  tasks               Task[]
+  tasks               Task[]    @relation("CreatedTasks")
+  assignedTasks       Task[]    @relation("AssignedTasks")
   collaborations      WorkspaceCollaborator[]
   tags                Tags[]
   notifications       Notifications[]
@@ -59,7 +60,7 @@ model Workspace {
 }
 
 model Task {
-  task_id      String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  task_id      String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   createdBy    String    @db.Uuid
   workspace_id String    @db.Uuid
   title        String    @db.VarChar(100)
@@ -71,13 +72,12 @@ model Task {
   due_date     DateTime?
   completed_at DateTime?
   assignedTo   String    @db.Uuid
-  user         User      @relation(fields: [createdBy], references: [id])
+  user         User      @relation("CreatedTasks", fields: [createdBy], references: [id])
+  assignedUser User      @relation("AssignedTasks", fields: [assignedTo], references: [id])
   workspace    Workspace @relation(fields: [workspace_id], references: [id])
   subtasks     Subtasks[]
   taskTags     TaskTags[]
   reminders    Reminders[]
-
-  @@unique([task_id])
 }
 
 model WorkspaceCollaborator {
