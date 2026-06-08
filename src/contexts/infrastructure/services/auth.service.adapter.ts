@@ -1,6 +1,6 @@
 import { User, AccessToken, RegisterRequestBody, validateUserBody } from '@/contexts/domain/models/';
 
-import { BadRequestException, Injectable, Inject, NotFoundException} from '@nestjs/common';
+import { BadRequestException, Injectable, Inject, NotFoundException, UnauthorizedException } from '@nestjs/common';
 
 import { JwtService } from '@nestjs/jwt';
 
@@ -25,13 +25,13 @@ export class AuthService implements AuthServicePort {
     // Check if the userBody is provided
     if(!userBody) throw new BadRequestException('User Body is required');
 
-    // Find the user by the provided email, and throw an error if it doesn't exist
+    // Find the user by the provided email
     const user = await this.userRepository.findUniqueByEmail(userBody.email);
-    if(!user) throw new NotFoundException(`User with email ${userBody.email} not found.`);
+    if(!user) throw new UnauthorizedException('Invalid email or password');
 
     // Check if the password matches the hashed password
     const isMatch: boolean = bcrypt.compareSync(userBody.password, user.password);
-    if(!isMatch) throw new BadRequestException('Password does not match.')
+    if(!isMatch) throw new UnauthorizedException('Invalid email or password');
 
     return user;
   }
