@@ -26,3 +26,4 @@ export * from './users/dtos/UpdateUserSettings.dto';
 export * from './comments/Comments.controller';
 export * from './comments/dtos/CreateComment.dto';
 export * from './comments/dtos/UpdateComment.dto';
+export * from './notifications/Notifications.controller';

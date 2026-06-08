@@ -1,4 +1,5 @@
 export * from './prismaActivityLog.repository.adapter';
+export * from './prismaNotification.repository.adapter';
 export * from './prismaComment.repository.adapter';
 export * from './prismaSubTask.repository.adapter';
 export * from './prismaWorkspace.repository.adapter';
