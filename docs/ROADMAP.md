@@ -47,7 +47,7 @@ críticos  y base    core      y reportes  completo  y CI/CD
 
 ## Phase 1 — Estabilización del Schema y la Base
 
-> ✅ BACKEND COMPLETED — 2026-06-08 | 16 tasks, 4 blocks (Schema, Validation, Auth, Errors), 16/16 verification PASS
+> ✅ COMPLETED — 2026-06-08 | Backend: 16 tasks, 4 blocks, 16/16 PASS | Frontend: 6/6 tasks complete
 
 > Dejar la API en un estado limpio y predecible antes de agregar features.
 
@@ -65,18 +65,18 @@ críticos  y base    core      y reportes  completo  y CI/CD
 
 ### Frontend
 
-- [ ] Refactorizar `app.component.html` (20KB) en componentes hijos
-- [ ] Implementar modelos de dominio: `Task`, `Workspace`, `User`, `Comment`
-- [ ] Implementar servicios HTTP para los endpoints existentes de la API
-- [ ] Implementar interceptor de auth (adjuntar JWT a requests)
-- [ ] Implementar guard de rutas para `/dashboard`
-- [ ] Conectar login/register del frontend con la API real
+- [x] Refactorizar `app.component.html` (20KB) en componentes hijos
+- [x] Implementar modelos de dominio: `Task`, `Workspace`, `User`, `Comment`
+- [x] Implementar servicios HTTP para los endpoints existentes de la API
+- [x] Implementar interceptor de auth (adjuntar JWT a requests)
+- [x] Implementar guard de rutas para `/dashboard`
+- [x] Conectar login/register del frontend con la API real
 
 ---
 
 ## Phase 2 — Features Core para Migración
 
-> ✅ BACKEND COMPLETED — 2026-06-08 | 18 tasks, 4 blocks (A-Comments, B-Activity, C-Notifications, D-AssignTask), 78/78 tests passing
+> ✅ COMPLETED — 2026-06-08 | Backend: 18/18 tasks, 78/78 tests passing | Frontend: F0-F4 all complete (Kanban, Task Detail, Notifications, Activity Feed)
 
 > Las features sin las cuales no se puede migrar de Monday.com.
 
@@ -110,15 +110,15 @@ críticos  y base    core      y reportes  completo  y CI/CD
 
 ### Frontend
 
-- [ ] Vista Kanban (por workspace)
-  - [ ] Columnas por estado: OPEN / IN_PROGRESS / COMPLETED
-  - [ ] Drag & drop entre columnas
-  - [ ] Card de tarea con título, prioridad, asignado, fecha
-- [ ] Panel de detalle de tarea (sidebar o modal)
-  - [ ] Ver/agregar comentarios
-  - [ ] Cambiar estado, prioridad, fecha, asignado
-- [ ] Sidebar de notificaciones
-- [ ] Feed de actividad por workspace
+- [x] Vista Kanban (por workspace)
+  - [x] Columnas por estado: OPEN / IN_PROGRESS / COMPLETED
+  - [x] Drag & drop entre columnas (Angular CDK DragDrop)
+  - [x] Card de tarea con título, prioridad, asignado, fecha
+- [x] Panel de detalle de tarea (sidebar deslizable)
+  - [x] Ver/agregar comentarios
+  - [x] Cambiar estado, prioridad, fecha, asignado
+- [x] Sidebar de notificaciones
+- [x] Feed de actividad por workspace
 
 ---
 
@@ -233,8 +233,8 @@ críticos  y base    core      y reportes  completo  y CI/CD
 
 ```
 Phase 0 — Bugs críticos:        13 / 13  ██████████  100% ✅
-Phase 1 — Estabilización:        9 /  9  ██████████  100% ✅ (Backend) | 0/6 Frontend
-Phase 2 — Features core:        18 / 22  ████████░░  82% (Backend complete | Frontend pending)
+Phase 1 — Estabilización:       15 / 15  ██████████  100% ✅ (Backend 9/9 | Frontend 6/6)
+Phase 2 — Features core:        26 / 26  ██████████  100% ✅ (Backend 18/18 | Frontend 8/8)
 Phase 3 — Analytics:             0 / 18  ░░░░░░░░░░  0%
 Phase 4 — Complementarias:       0 / 12  ░░░░░░░░░░  0%
 Phase 5 — Deploy:                0 / 12  ░░░░░░░░░░  0%
