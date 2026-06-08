@@ -7,4 +7,5 @@ export * from './getAllTasksByWorkspace/getAllTasksByWorkspace.use-case';
 export * from './getAllTasksCreatedByUser/getAllTasksCreatedByUser.use-case';
 export * from './getAllTasksOfUser/getAllTasksOfUser.use-case';
 export * from './getTaskById/getTaskById.use-case';
+export * from './searchTasks/searchTasks.use-case';
 export * from './updateTask/updateTask.use-case';

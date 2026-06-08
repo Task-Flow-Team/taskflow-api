@@ -1,4 +1,6 @@
 import { Task } from "@/contexts/domain/models";
+import { FilterTasksDto } from '@/contexts/infrastructure/http-api/v1/tasks/dtos';
+import { PaginatedResponse } from '@/contexts/shared/pagination.types';
 
 export abstract class TaskRepository {
 
@@ -28,7 +30,18 @@ export abstract class TaskRepository {
      * 
      * @throws ForbiddenException If the user is not authorized to access to the specified workspace or hasn't admin role.
      */
-    abstract getAllTasksByWorkspaceId(workspaceId: string): Promise<Task[]>;
+    abstract getAllTasksByWorkspaceId(workspaceId: string, filters?: FilterTasksDto): Promise<PaginatedResponse<Task>>;
+
+    /**
+     * Method for searching tasks by title or description in a workspace
+     *
+     * @param workspaceId - The ID of the workspace to search in.
+     *
+     * @param q - The search query string.
+     *
+     * @returns {Promise<Task[]>} An array of tasks matching the search query.
+     */
+    abstract searchTasksByWorkspace(workspaceId: string, q: string): Promise<Task[]>;
 
     /**
      * Method for getting all tasks created by a user in all workspaces where he stays.

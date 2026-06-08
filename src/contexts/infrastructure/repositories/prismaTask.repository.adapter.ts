@@ -6,6 +6,8 @@ import {
 import { PrismaService } from '@/contexts/shared/prisma/prisma.service';
 import { TaskRepository } from '@/contexts/domain/repositories/task.repository.port';
 import { CreateTaskBody, Task } from '@/contexts/domain/models';
+import { FilterTasksDto } from '@/contexts/infrastructure/http-api/v1/tasks/dtos';
+import { PaginatedResponse, encodeCursor, decodeCursor } from '@/contexts/shared/pagination.types';
 
 @Injectable()
 export class PrismaTaskRepository implements TaskRepository {
@@ -19,7 +21,7 @@ export class PrismaTaskRepository implements TaskRepository {
     });
   }
 
-  async getAllTasksByWorkspaceId(workspaceId: string): Promise<Task[]> {
+  async getAllTasksByWorkspaceId(workspaceId: string, filters?: FilterTasksDto): Promise<PaginatedResponse<Task>> {
     // Check if workspaceId is provided
     if (!workspaceId) throw new BadRequestException('Workspace ID is required');
 
@@ -30,13 +32,37 @@ export class PrismaTaskRepository implements TaskRepository {
     if (!workspace)
       throw new NotFoundException(`Workspace with ID ${workspaceId} not found`);
 
-    // Get all tasks within the workspace provided
-    const task = await this.db.task.findMany({
-      where: { workspace_id: workspaceId },
-    });
+    const limit = Math.min(filters?.limit ?? 20, 100);
+    const cursor = filters?.cursor ? decodeCursor(filters.cursor) : undefined;
 
-    // Return the tasks found
-    return task;
+    const where = {
+      workspace_id: workspaceId,
+      ...(filters?.status && { status: filters.status as any }),
+      ...(filters?.priority !== undefined && { priority: filters.priority }),
+      ...(filters?.assignedTo && { assignedTo: filters.assignedTo }),
+      ...((filters?.dueDateBefore || filters?.dueDateAfter) && {
+        due_date: {
+          ...(filters?.dueDateBefore && { lte: new Date(filters.dueDateBefore) }),
+          ...(filters?.dueDateAfter && { gte: new Date(filters.dueDateAfter) }),
+        },
+      }),
+    };
+
+    const [items, total] = await Promise.all([
+      this.db.task.findMany({
+        where,
+        take: limit + 1,
+        ...(cursor && { cursor: { task_id: cursor }, skip: 1 }),
+        orderBy: { created_at: 'desc' },
+      }),
+      this.db.task.count({ where }),
+    ]);
+
+    const hasMore = items.length > limit;
+    const data = hasMore ? items.slice(0, -1) : items;
+    const nextCursor = hasMore ? encodeCursor(data[data.length - 1].task_id) : null;
+
+    return { data, nextCursor, total };
   }
 
   async getAllTasksCreatedByUser(userId: string): Promise<Task[]> {
@@ -155,6 +181,20 @@ export class PrismaTaskRepository implements TaskRepository {
       where: { task_id: taskId },
     });
 
+  }
+
+  async searchTasksByWorkspace(workspaceId: string, q: string): Promise<Task[]> {
+    return this.db.task.findMany({
+      where: {
+        workspace_id: workspaceId,
+        OR: [
+          { title: { contains: q, mode: 'insensitive' } },
+          { description: { contains: q, mode: 'insensitive' } },
+        ],
+      },
+      orderBy: { created_at: 'desc' },
+      take: 50,
+    });
   }
 
   async updateTask(userId: string, taskId: string, task: Partial<Task>): Promise<Task> {

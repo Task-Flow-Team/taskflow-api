@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, HttpStatus, HttpCode, BadRequestException, UseGuards, ForbiddenException, NotFoundException } from '@nestjs/common';
-import { AssignTaskDto, UpdateTaskDto, CreateTaskDto } from '@/contexts/infrastructure/http-api/v1/tasks/dtos';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, HttpStatus, HttpCode, BadRequestException, UseGuards, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { AssignTaskDto, UpdateTaskDto, CreateTaskDto, FilterTasksDto } from '@/contexts/infrastructure/http-api/v1/tasks/dtos';
 import { API_VERSION } from '@/contexts/infrastructure/http-api/v1/';
 import * as TaskUseCases from '@/contexts/application/usecases/tasks';
 import { Roles, User as UserDecorator } from '@/contexts/shared/lib/decorators';
@@ -24,6 +24,7 @@ export class TaskController {
     private readonly getAllTasksUseCase: TaskUseCases.GetAllTasksUseCase,
     private readonly getTaskByIdUseCase: TaskUseCases.GetTaskByIdUseCase,
     private readonly assignTaskUseCase: TaskUseCases.AssignTaskUseCase,
+    private readonly searchTasksUseCase: TaskUseCases.SearchTasksUseCase,
   ) {}
 
   // Create a new task
@@ -44,12 +45,26 @@ export class TaskController {
     return await this.getAllTasksAssignedToUserUseCase.run(userId);
   }
 
-  // Get all tasks of a workspace
+  // Get all tasks of a workspace with optional filtering and cursor pagination
   @Get('workspace/:workspaceId')
   @UseGuards(WorkspaceMemberGuard)
   @HttpCode(HttpStatus.OK)
-  async getAllTasksByWorkspace(@Param('workspaceId') workspaceId: string): Promise<Task[]> {
-    return await this.getAllTasksByWorkspaceUseCase.run(workspaceId);
+  async getAllTasksByWorkspace(
+    @Param('workspaceId') workspaceId: string,
+    @Query() filters: FilterTasksDto,
+  ) {
+    return await this.getAllTasksByWorkspaceUseCase.run(workspaceId, filters);
+  }
+
+  // Search tasks by title or description in a workspace
+  @Get('workspace/:workspaceId/search')
+  @UseGuards(WorkspaceMemberGuard)
+  @HttpCode(HttpStatus.OK)
+  async searchTasks(
+    @Param('workspaceId') workspaceId: string,
+    @Query('q') q: string = '',
+  ): Promise<Task[]> {
+    return this.searchTasksUseCase.run(workspaceId, q);
   }
 
   // Get all tasks created by a user (userId from JWT — IDOR fix)
