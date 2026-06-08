@@ -89,8 +89,8 @@ export class SubTaskController {
   // Update a subtask
   @Put(':id')
   @HttpCode(HttpStatus.OK)
-  async updateSubTask(@Param('id') subTaskId: string, @Body() subTaskDto: UpdateSubTaskDto) {
-    const updatedSubTask = await this.updateSubTaskUseCase.run(subTaskId, subTaskDto);
+  async updateSubTask(@UserDecorator() user, @Param('id') subTaskId: string, @Body() subTaskDto: UpdateSubTaskDto) {
+    const updatedSubTask = await this.updateSubTaskUseCase.run(user.id, subTaskId, subTaskDto);
     return {
       message: 'Subtask updated successfully',
       subTask: updatedSubTask,

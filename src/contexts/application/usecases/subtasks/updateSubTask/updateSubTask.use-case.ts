@@ -14,8 +14,8 @@ export class UpdateSubTaskUseCase {
     @Inject('activityLogRepository') private activityLogRepository: ActivityLogRepository,
   ) {}
 
-  // This function takes a subTaskId as a parameter and returns the sub task updated
-  async run(subTaskId: string, subTask: Partial<SubTask>): Promise<SubTask> {
+  // This function takes a userId, subTaskId and subTask as parameters and returns the sub task updated
+  async run(userId: string, subTaskId: string, subTask: Partial<SubTask>): Promise<SubTask> {
 
     // Call the repository method to update a sub task
     const updatedSubTask = await this.subTaskRepository.updateSubTask(subTaskId, subTask);
@@ -24,7 +24,7 @@ export class UpdateSubTaskUseCase {
     const parentTask = await this.taskRepository.getTaskById(updatedSubTask.task_id);
 
     // Log the activity as fire-and-forget to avoid latency impact
-    void this.activityLogRepository.logActivity(updatedSubTask.createdBy, parentTask.workspace_id, 'subtask:updated');
+    void this.activityLogRepository.logActivity(userId, parentTask.workspace_id, 'subtask:updated');
 
     return updatedSubTask;
 
