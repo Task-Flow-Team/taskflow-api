@@ -1,23 +1,22 @@
-import { User, AccessToken, RegisterRequestBody, validateUserBody } from '@/contexts/domain/models/';
-
+import { User, AccessToken, RegisterRequestBody, validateUserBody, Mail } from '@/contexts/domain/models/';
 import { BadRequestException, Injectable, Inject, NotFoundException, UnauthorizedException } from '@nestjs/common';
-
 import { JwtService } from '@nestjs/jwt';
-
 import * as bcrypt from 'bcrypt';
-
 import { AuthServicePort } from '@/contexts/domain/services';
-
+import { MailService } from '@/contexts/domain/services';
 import { RedisBlacklistUseCase } from '@/contexts/application/usecases/auth';
-
 import { UserRepository } from '@/contexts/domain/repositories';
+import { ConfigService } from '@nestjs/config';
+import { welcomeTemplate } from '@/contexts/infrastructure/templates';
 
 @Injectable()
 export class AuthService implements AuthServicePort {
   constructor(
     @Inject('userRepository') private userRepository: UserRepository,
+    @Inject('mailService') private mailService: MailService,
     private jwtService: JwtService,
     private redisBlacklistService: RedisBlacklistUseCase,
+    private configService: ConfigService,
   ) {}
 
   async validateUser(userBody: validateUserBody): Promise<User> {
@@ -85,6 +84,21 @@ export class AuthService implements AuthServicePort {
 
     // Create a new user with the hashed password
     const user = await this.userRepository.createNewUser(userToRegister, hashedPassword);
+
+    // Send welcome email (fire-and-forget)
+    const userName = user.name || user.username || 'New User';
+    const loginUrl = this.configService.get<string>('APP_URL') || 'http://localhost:4200';
+    const welcomeMail: Mail = {
+      to: [{ name: userName, email: user.email }],
+      from: {
+        name: this.configService.get<string>('RESEND_FROM_NAME'),
+        email: this.configService.get<string>('RESEND_FROM_EMAIL'),
+      },
+      subject: 'Welcome to TaskFlow!',
+      text: `Welcome to TaskFlow, ${userName}! Your account has been created successfully.`,
+      html: welcomeTemplate({ userName, loginUrl }),
+    };
+    this.mailService.send(welcomeMail).catch(() => {});
 
     // Login the user and return the access token
     return this.login(user);
