@@ -76,35 +76,37 @@ críticos  y base    core      y reportes  completo  y CI/CD
 
 ## Phase 2 — Features Core para Migración
 
+> ✅ BACKEND COMPLETED — 2026-06-08 | 18 tasks, 4 blocks (A-Comments, B-Activity, C-Notifications, D-AssignTask), 78/78 tests passing
+
 > Las features sin las cuales no se puede migrar de Monday.com.
 
 ### Backend
 
-- [ ] **Comentarios en tareas**
-  - [ ] Use case: `CreateCommentUseCase`
-  - [ ] Use case: `GetCommentsByTaskUseCase`
-  - [ ] Use case: `DeleteCommentUseCase`
-  - [ ] Port: `CommentRepository`
-  - [ ] Adapter: `PrismaCommentRepository`
-  - [ ] Controller: `Comment.controller.ts` (`POST /v1/tasks/:id/comments`, `GET /v1/tasks/:id/comments`, `DELETE /v1/comments/:id`)
+- [x] **Comentarios en tareas**
+  - [x] Use case: `CreateCommentUseCase`
+  - [x] Use case: `GetCommentsByTaskUseCase`
+  - [x] Use case: `DeleteCommentUseCase`
+  - [x] Port: `CommentRepository`
+  - [x] Adapter: `PrismaCommentRepository`
+  - [x] Controller: `Comment.controller.ts` (`POST /v1/tasks/:id/comments`, `GET /v1/tasks/:id/comments`, `DELETE /v1/comments/:id`)
 
-- [ ] **Feed de actividad funcional**
-  - [ ] Trigger de `ActivityLog` en create/update/delete de Task
-  - [ ] Trigger de `ActivityLog` en create/update/delete de Subtask
-  - [ ] Use case: `GetActivityByWorkspaceUseCase`
-  - [ ] Endpoint: `GET /v1/workspaces/:id/activity`
+- [x] **Feed de actividad funcional**
+  - [x] Trigger de `ActivityLog` en create/update/delete de Task
+  - [x] Trigger de `ActivityLog` en create/update/delete de Subtask
+  - [x] Use case: `GetActivityByWorkspaceUseCase`
+  - [x] Endpoint: `GET /v1/workspaces/:id/activity`
 
-- [ ] **Notificaciones funcionales**
-  - [ ] Trigger: notificación in-app al asignar una tarea
-  - [ ] Trigger: notificación in-app al comentar en una tarea asignada al usuario
-  - [ ] Trigger: email al asignar tarea (usando infraestructura de mailer existente)
-  - [ ] Use case: `GetUserNotificationsUseCase`
-  - [ ] Use case: `MarkNotificationAsReadUseCase`
-  - [ ] Endpoint: `GET /v1/users/me/notifications`
-  - [ ] Endpoint: `PATCH /v1/notifications/:id/read`
+- [x] **Notificaciones funcionales**
+  - [x] Trigger: notificación in-app al asignar una tarea
+  - [x] Trigger: notificación in-app al comentar en una tarea asignada al usuario
+  - [x] Trigger: email al asignar tarea (usando infraestructura de mailer existente)
+  - [x] Use case: `GetUserNotificationsUseCase`
+  - [x] Use case: `MarkNotificationAsReadUseCase`
+  - [x] Endpoint: `GET /v1/users/me/notifications`
+  - [x] Endpoint: `PATCH /v1/notifications/:id/read`
 
-- [ ] **Asignación correcta de tareas**
-  - [ ] Endpoint: `PATCH /v1/tasks/:id/assign` con validación de membership en workspace
+- [x] **Asignación correcta de tareas**
+  - [x] Endpoint: `PATCH /v1/tasks/:id/assign` con validación de membership en workspace
 
 ### Frontend
 
@@ -232,7 +234,7 @@ críticos  y base    core      y reportes  completo  y CI/CD
 ```
 Phase 0 — Bugs críticos:        13 / 13  ██████████  100% ✅
 Phase 1 — Estabilización:        9 /  9  ██████████  100% ✅ (Backend) | 0/6 Frontend
-Phase 2 — Features core:         0 / 22  ░░░░░░░░░░  0%
+Phase 2 — Features core:        18 / 22  ████████░░  82% (Backend complete | Frontend pending)
 Phase 3 — Analytics:             0 / 18  ░░░░░░░░░░  0%
 Phase 4 — Complementarias:       0 / 12  ░░░░░░░░░░  0%
 Phase 5 — Deploy:                0 / 12  ░░░░░░░░░░  0%
