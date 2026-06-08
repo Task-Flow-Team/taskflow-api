@@ -1,6 +1,5 @@
 import {
   Controller,
-  Headers,
   Post,
   UseGuards,
   Body,
@@ -10,7 +9,8 @@ import {
   Get,
   HttpStatus,
   HttpCode,
-  Request, Req,
+  Req,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import * as AuthUseCases from '@/contexts/application/usecases/auth';
@@ -21,7 +21,6 @@ import { JwtAuthGuard } from '@/contexts/shared/lib/guards';
 import { ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { LoginRequestDto } from './dtos';
 
-@Public()
 @Controller(`${API_VERSION}/auth`)
 export class AuthController {
   constructor(
@@ -33,6 +32,7 @@ export class AuthController {
     private readonly resetPasswordUseCase: AuthUseCases.ResetPasswordUseCase,
   ) {}
 
+  @Public()
   @UseGuards(AuthGuard('local'))
   @Post('login')
   @HttpCode(HttpStatus.OK)
@@ -42,6 +42,7 @@ export class AuthController {
     return await this.loginUseCase.run(loginBody);
   }
 
+  @Public()
   @Post('register')
   @UsePipes(new ValidationPipe())
   @HttpCode(HttpStatus.CREATED)
@@ -52,20 +53,21 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('logout')
-  @ApiBearerAuth() // Indica que el endpoint usa Bearer Token
+  @Post('logout')
+  @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
   async logout(@Req() request: Request): Promise<{ message: string }> {
-    const authHeader = request.headers['authorization']; // Obtén el encabezado Authorization
-    const token = authHeader?.split(' ')[1]; // Extrae el token
+    const authHeader = request.headers['authorization'];
+    const token = authHeader?.split(' ')[1];
     if (!token) {
-      throw new Error('Token no proporcionado'); // Manejo de error si no hay token
+      throw new UnauthorizedException('Token not provided');
     }
 
-    await this.logoutUseCase.run(token); // Lógica del caso de uso
-    return { message: 'Successfully Logged Out' }; // Respuesta
+    await this.logoutUseCase.run(token);
+    return { message: 'Successfully logged out' };
   }
 
+  @Public()
   @Post('verify-email')
   @UsePipes(new ValidationPipe())
   @HttpCode(HttpStatus.OK)
@@ -76,6 +78,7 @@ export class AuthController {
     return { message: 'Verification email sent successfully' };
   }
 
+  @Public()
   @Get('verify-email')
   @HttpCode(HttpStatus.OK)
   async confirmEmail(
@@ -85,6 +88,7 @@ export class AuthController {
     return { message: 'Email successfully verified' };
   }
 
+  @Public()
   @Post('resend-email')
   @HttpCode(HttpStatus.OK)
   async resendEmail(
@@ -96,6 +100,7 @@ export class AuthController {
     return { message: 'Verification email successfully re-sent' };
   }
 
+  @Public()
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
   async resetPassword(
@@ -110,6 +115,7 @@ export class AuthController {
     };
   }
 
+  @Public()
   @Post('reset-password/confirm')
   @HttpCode(HttpStatus.OK)
   async confirmResetPassword(
