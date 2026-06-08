@@ -114,7 +114,7 @@ export class TaskController {
     const task = await this.getTaskByIdUseCase.run(taskId);
     if (!task) throw new NotFoundException('Task not found');
     if (task.createdBy !== userId) throw new ForbiddenException('You do not have permission to delete this task');
-    await this.deleteTaskUseCase.run(taskId);
+    await this.deleteTaskUseCase.run(taskId, userId);
     return {
       message: 'Task deleted successfully',
     };

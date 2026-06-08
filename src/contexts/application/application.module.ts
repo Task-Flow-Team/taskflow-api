@@ -87,6 +87,10 @@ import { JwtModule } from '@nestjs/jwt';
       useClass: repositories.PrismaTaskRepository,
     },
     {
+      provide: 'activityLogRepository',
+      useClass: repositories.PrismaActivityLogRepository,
+    },
+    {
       provide: 'commentRepository',
       useClass: repositories.PrismaCommentRepository,
     },

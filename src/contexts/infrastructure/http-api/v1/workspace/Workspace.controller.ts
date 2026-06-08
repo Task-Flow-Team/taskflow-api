@@ -24,6 +24,7 @@ export class WorkspaceController {
     private readonly addCollaboratorUseCase: WorkspaceUseCases.AddCollaboratorUseCase,
     private readonly getCollaboratorsUseCase: WorkspaceUseCases.GetCollaboratorsUseCase,
     private readonly deleteCollaboratorUseCase: WorkspaceUseCases.DeleteCollaboratorUseCase,
+    private readonly getActivityByWorkspaceUseCase: WorkspaceUseCases.GetActivityByWorkspaceUseCase,
   ) {}
 
   // Create workspace route
@@ -72,6 +73,14 @@ export class WorkspaceController {
   @HttpCode(HttpStatus.OK)
   async getWorkspaceById(@Param('id') workspaceId: string): Promise<Workspace> {
     return await this.getWorkspaceByIdUseCase.run(workspaceId);
+  }
+
+  // Get activity feed for a workspace
+  @Get(':id/activity')
+  @UseGuards(WorkspaceMemberGuard)
+  @HttpCode(HttpStatus.OK)
+  async getWorkspaceActivity(@Param('id') workspaceId: string) {
+    return await this.getActivityByWorkspaceUseCase.run(workspaceId);
   }
 
   // Update an existing workspace

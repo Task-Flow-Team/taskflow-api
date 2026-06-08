@@ -4,6 +4,7 @@ export * from './deleteWorkspace/deleteWorkspace.use-case';
 export * from './getAllCollaboratorsInWorkspace/getCollaborators.use-case';
 export * from './getAllWorkspaces/getAllWorkspaces.use-case';
 export * from './getAllWorkspacesAsCollaborator/getAllWorkspacesAsCollaborator.use-case';
+export * from './getActivityByWorkspace/getActivityByWorkspace.use-case';
 export * from './getWorkspaceById/getById.use-case';
 export * from './getWorkspacesCreatedByUser/getWorkspacesByUser.use-case';
 export * from './getWorkspacesOfUser/getAllWorkspacesOfUser.use-case';
