@@ -9,11 +9,9 @@ import * as commentUseCases from '@/contexts/application/usecases/comments';
 import * as repositories from '@/contexts/infrastructure/repositories';
 import * as services from '@/contexts/infrastructure/services';
 
-import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { JwtStrategy, LocalStrategy } from '@/contexts/shared/lib/strategy';
 import { PrismaService } from '@/contexts/shared/prisma/prisma.service';
 import { ConfigService, ConfigModule } from '@nestjs/config';
-import { MailerModule } from '@nestjs-modules/mailer';
 import { redisStore } from 'cache-manager-redis-yet';
 import { CacheModule } from '@nestjs/cache-manager';
 import { PassportModule } from '@nestjs/passport';
@@ -31,33 +29,6 @@ import { JwtModule } from '@nestjs/jwt';
         signOptions: { expiresIn: '6h' },
       }),
       inject: [ConfigService],
-    }),
-    MailerModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => ({
-        transport: {
-          host: configService.get<string>('MAILJET_HOST'),
-          port: configService.get<string>('MAILJET_PORT'),
-          secure: false,
-          auth: {
-            user: configService.get<string>('MAILJET_PUBLIC_KEY'),
-            pass: configService.get<string>('MAILJET_SECRET_KEY'),
-          },
-          logger: configService.get<string>('NODE_ENV') === 'development',
-          debug: configService.get<string>('NODE_ENV') === 'development',
-        },
-        defaults: {
-          from: `"${process.env.MAILJET_FROM_NAME}" <${process.env.MAILJET_FROM_EMAIL}>`,
-        },
-        template: {
-          dir: '@/contexts/infrastructure/templates',
-          adapter: new HandlebarsAdapter(),
-          options: {
-            strict: true,
-          },
-        },
-      }),
     }),
     CacheModule.registerAsync({
       isGlobal: true,
@@ -121,7 +92,7 @@ import { JwtModule } from '@nestjs/jwt';
     },
     {
       provide: 'mailService',
-      useClass: services.NestMailRepository,
+      useClass: services.ResendMailService,
     },
 
     // Add the ConfigService for the use in the use-cases

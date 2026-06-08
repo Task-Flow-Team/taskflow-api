@@ -4,6 +4,7 @@ import { MailService } from '@/contexts/domain/services';
 import { BadRequestException, Injectable, Inject } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { randomUUID } from "crypto";
+import { verifyEmailTemplate } from '@/contexts/infrastructure/templates';
 
 @Injectable()
 export class ResendEmailVerificationUseCase {
@@ -41,20 +42,16 @@ export class ResendEmailVerificationUseCase {
         const appUrl = this.configService.get<string>('APP_URL');
         const verificationUrl = `${appUrl}/verify-email?token=${verificationToken}`;
 
-        // Create a Mail object with the user's name and email, the verification URL, and the from email and name
-        const mailToSend:Mail = {
-            to: [{
-                name: user.name || 'New User',
-                email: user.email,
-            }],
+        const userName = user.name || 'New User';
+        const mailToSend: Mail = {
+            to: [{ name: userName, email: user.email }],
             from: {
-                name: this.configService.get<string>('MAILJET_FROM_NAME'),
-                email: this.configService.get<string>('MAILJET_FROM_EMAIL'),
-
+                name: this.configService.get<string>('RESEND_FROM_NAME'),
+                email: this.configService.get<string>('RESEND_FROM_EMAIL'),
             },
-            subject: 'Verify your email',
-            text: `Please verify your email by clicking the link below: ${verificationUrl}`,
-            html: `<p>Please verify your email by clicking <a href="${verificationUrl}">this link</a>.</p>`,
+            subject: 'Verify your email — TaskFlow',
+            text: `Hi ${userName}, please verify your email by clicking the link: ${verificationUrl}`,
+            html: verifyEmailTemplate({ userName, verificationUrl }),
         };
 
         // Send the verification email using the MailService, and throw an error if it fails

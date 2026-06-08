@@ -6,7 +6,8 @@ import { BadRequestException, Inject, Injectable, InternalServerErrorException, 
 import { ConfigService } from '@nestjs/config';
 import { Cache } from 'cache-manager';
 import { randomUUID } from 'crypto';
-import {hash} from 'bcrypt';
+import { hash } from 'bcrypt';
+import { resetPasswordTemplate } from '@/contexts/infrastructure/templates';
 
 @Injectable()
 export class ResetPasswordUseCase {
@@ -77,19 +78,16 @@ export class ResetPasswordUseCase {
       // Construct the reset password route with the token
       const resetUrl = `${this.configService.get<string>('APP_URL')}/${route}?token=${token}`;
 
-      // Construct the mail object
-      const mailToSend:Mail = {
-        to: [{
-          name: user.name || 'Dear User',
-          email: user.email,
-        }],
+      const userName = user.name || 'Dear User';
+      const mailToSend: Mail = {
+        to: [{ name: userName, email: user.email }],
         from: {
-          name: this.configService.get<string>('MAILJET_FROM_NAME'),
-          email: this.configService.get<string>('MAILJET_FROM_EMAIL'),
+          name: this.configService.get<string>('RESEND_FROM_NAME'),
+          email: this.configService.get<string>('RESEND_FROM_EMAIL'),
         },
-        subject: 'Reset your password',
-        text: `Please reset your password by clicking the link below: ${resetUrl}`,
-        html: `<p>Please reset your password by clicking <a href="${resetUrl}">this link</a>.</p>`,
+        subject: 'Reset your password — TaskFlow',
+        text: `Hi ${userName}, reset your password by clicking the link: ${resetUrl}`,
+        html: resetPasswordTemplate({ userName, resetUrl }),
       };
 
       return this.mailService.send(mailToSend);
