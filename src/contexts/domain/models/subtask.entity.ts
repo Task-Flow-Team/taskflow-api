@@ -5,12 +5,12 @@ export interface SubTask {
     task_id: string,
     createdBy: string,
     title: string,
-    description: string,
+    description: string | null,
     status: TaskStatus,
     priority: number,
     created_at: Date,
     updated_at: Date,
-    due_at: Date,
-    completed_at: Date,
-    assignedTo: string
+    due_at: Date | null,
+    completed_at: Date | null,
+    assignedTo: string | null
 }

@@ -9,28 +9,17 @@ import { TokenExpiredError } from '@nestjs/jwt';
 import { AuthGuard } from '@nestjs/passport';
 import { Reflector } from '@nestjs/core';
 import { RedisBlacklistUseCase } from '@/contexts/application/usecases/auth';
-import { getUserByEmailUseCase } from '@/contexts/application/usecases/users';
 import { ROLES_KEY } from '@/contexts/shared/lib/decorators';
 
 // This class is used to protect routes with JWT authentication
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
 
-  /* Implements the canActivate method from the AuthGuard class */
   constructor(
-    // Get the reflector for access to metadata
     private reflector: Reflector,
-
-    // Get the blacklist use cases
     private redisBlacklistUseCase: RedisBlacklistUseCase,
-
-    // Get the getUserByEmail use case
-    private getUserByEmail: getUserByEmailUseCase,
   ) {
-
-    // Call the parent constructor
     super();
-
   }
 
   // This method is used to check if the route is public or not
@@ -86,19 +75,11 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       context.getClass(),
     ]);
 
-    // If the required roles are provided, check if the user has the required roles
     if (requiredRoles && requiredRoles.length > 0) {
-
-      // Get the user with the email from the request and check if it exists
-      const user = await this.getUserByEmail.run(request.user.email);
-      if (!user) throw new UnauthorizedException(`User with email ${request.user.email} not found`);
-
-      // Compare the user roles with the required roles and check if they match
-      let hasPermission = requiredRoles.some((role) =>
-        user.roles?.includes(role),
+      const userRoles: string[] = request.user?.roles || [];
+      const hasPermission = requiredRoles.some((role) =>
+        userRoles.includes(role),
       );
-
-      // If the user doesn't have the required roles, throw a forbidden exception
       if (!hasPermission) throw new ForbiddenException('You do not have permission to access this resource');
     }
 

@@ -2,9 +2,11 @@ import { InfrastructureModule } from '@/contexts/infrastructure/infrastructure.m
 import { ApplicationModule } from '@/contexts/application/application.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
+import { HttpExceptionFilter } from '@/contexts/shared/lib/filters/http-exception.filter';
 import { JwtAuthGuard } from '@/contexts/shared/lib/guards';
 import { PrismaUserRepository } from '@/contexts/infrastructure/repositories/';
 import { PrismaService } from '@/contexts/shared/prisma/prisma.service';
@@ -16,6 +18,7 @@ import { JwtService } from '@nestjs/jwt';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    ThrottlerModule.forRoot([{ ttl: 60000, limit: 10 }]),
     ApplicationModule,
     InfrastructureModule,
   ],
@@ -31,6 +34,10 @@ import { JwtService } from '@nestjs/jwt';
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
     },
     JwtStrategy,
   ],

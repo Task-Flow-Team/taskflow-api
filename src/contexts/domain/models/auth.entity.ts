@@ -12,6 +12,7 @@ export type AccessToken = {
 export type AccessTokenPayload = {
   userId: string;
   email: string;
+  roles: string[];
 };
 
 export interface RegisterRequestBody {

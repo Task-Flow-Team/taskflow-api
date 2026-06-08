@@ -1,9 +1,9 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, HttpStatus, HttpCode, UsePipes, ValidationPipe, UseGuards } from '@nestjs/common';
-import { CreateWorkspaceDto } from '@/contexts/infrastructure/http-api/v1/workspace/dtos';
+import { Controller, Get, Post, Put, Delete, Body, Param, HttpStatus, HttpCode, UseGuards } from '@nestjs/common';
+import { CreateWorkspaceDto, UpdateWorkspaceDto, AddCollaboratorDto } from '@/contexts/infrastructure/http-api/v1/workspace/dtos';
 import { API_VERSION } from '@/contexts/infrastructure/http-api/v1/';
 import * as WorkspaceUseCases from '@/contexts/application/usecases/workspaces';
 import { User as UserDecorator, Roles } from '@/contexts/shared/lib/decorators';
-import { JwtAuthGuard } from '@/contexts/shared/lib/guards';
+import { JwtAuthGuard, WorkspaceMemberGuard } from '@/contexts/shared/lib/guards';
 import { Workspace } from '@/contexts/domain/models';
 import { ApiBearerAuth } from '@nestjs/swagger';
 
@@ -28,7 +28,6 @@ export class WorkspaceController {
 
   // Create workspace route
   @Post()
-  @UsePipes(new ValidationPipe())
   @HttpCode(HttpStatus.CREATED)
   async createWorkspace(@UserDecorator('userId') userId: string, @Body() workspaceDto: CreateWorkspaceDto) {
     const workspace = await this.createWorkspaceUseCase.run(userId, workspaceDto.name, workspaceDto.description);
@@ -50,7 +49,6 @@ export class WorkspaceController {
   @Get('my-workspaces')
   @HttpCode(HttpStatus.OK)
   async getMyWorkspaces(@UserDecorator('userId') userId: string): Promise<Workspace[]> {
-    console.log(userId)
     return await this.getWorkspacesOfUserUseCase.run(userId);
   }
 
@@ -70,6 +68,7 @@ export class WorkspaceController {
 
   // Get an unique workspace by Id
   @Get(':id')
+  @UseGuards(WorkspaceMemberGuard)
   @HttpCode(HttpStatus.OK)
   async getWorkspaceById(@Param('id') workspaceId: string): Promise<Workspace> {
     return await this.getWorkspaceByIdUseCase.run(workspaceId);
@@ -77,10 +76,10 @@ export class WorkspaceController {
 
   // Update an existing workspace
   @Put(':id')
-  @UsePipes(new ValidationPipe())
+  @UseGuards(WorkspaceMemberGuard)
   @HttpCode(HttpStatus.OK)
-  async updateWorkspace(@Param('id') workspaceId: string, @Body() workspace: Workspace) {
-    const updatedWorkspace = await this.updateWorkspaceUseCase.run(workspaceId, workspace);
+  async updateWorkspace(@Param('id') workspaceId: string, @Body() workspaceDto: UpdateWorkspaceDto) {
+    const updatedWorkspace = await this.updateWorkspaceUseCase.run(workspaceId, workspaceDto as any);
     return {
       message: 'Workspace updated successfully',
       workspace: updatedWorkspace,
@@ -89,6 +88,7 @@ export class WorkspaceController {
 
   // Delete an existing workspace
   @Delete(':id')
+  @UseGuards(WorkspaceMemberGuard)
   @HttpCode(HttpStatus.OK)
   async deleteWorkspace(@Param('id') workspaceId: string) {
     await this.deleteWorkspaceUseCase.run(workspaceId);
@@ -99,9 +99,10 @@ export class WorkspaceController {
 
   // Add a collaborator to a workspace
   @Post(':id/collaborators')
+  @UseGuards(WorkspaceMemberGuard)
   @HttpCode(HttpStatus.CREATED)
-  async addCollaborator(@Param('id') workspaceId: string, @Body('userId') userId: string) {
-    const collaborator = await this.addCollaboratorUseCase.run(workspaceId, userId);
+  async addCollaborator(@Param('id') workspaceId: string, @Body() dto: AddCollaboratorDto) {
+    const collaborator = await this.addCollaboratorUseCase.run(workspaceId, dto.userId);
     return {
       message: 'Collaborator added successfully',
       collaborator,
@@ -110,6 +111,7 @@ export class WorkspaceController {
 
   // Get all collaborators of a workspace
   @Get(':id/collaborators')
+  @UseGuards(WorkspaceMemberGuard)
   @HttpCode(HttpStatus.OK)
   async getCollaborators(@Param('id') workspaceId: string) {
     const collaborators = await this.getCollaboratorsUseCase.run(workspaceId);
@@ -118,6 +120,7 @@ export class WorkspaceController {
 
   // Remove a collaborator from a workspace
   @Delete(':id/collaborators/:userId')
+  @UseGuards(WorkspaceMemberGuard)
   @HttpCode(HttpStatus.OK)
   async removeCollaborator(@Param('id') workspaceId: string, @Param('userId') userId: string) {
     await this.deleteCollaboratorUseCase.run(workspaceId, userId);

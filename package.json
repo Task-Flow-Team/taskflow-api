@@ -22,14 +22,15 @@
   "dependencies": {
     "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/cache-manager": "^2.2.2",
-    "@nestjs/common": "^11.0.1",
+    "@nestjs/common": "^11.1.0",
     "@nestjs/config": "^3.2.3",
-    "@nestjs/core": "^11.0.1",
-    "@nestjs/jwt": "^10.2.0",
+    "@nestjs/core": "^11.1.0",
+    "@nestjs/jwt": "^11.0.0",
     "@nestjs/microservices": "^11.0.0",
     "@nestjs/passport": "^11.0.0",
-    "@nestjs/platform-express": "^11.0.0",
+    "@nestjs/platform-express": "^11.1.0",
     "@nestjs/swagger": "^11.0.2",
+    "@nestjs/throttler": "^6.5.0",
     "@prisma/client": "^5.19.1",
     "bcrypt": "^5.1.1",
     "cache-manager-redis-yet": "^5.1.5",
@@ -98,6 +99,11 @@
   },
   "trustedDependencies": [
     "@nestjs/core",
-    "@swc/core"
+    "@prisma/client",
+    "@prisma/engines",
+    "@scarf/scarf",
+    "@swc/core",
+    "bcrypt",
+    "prisma"
   ]
 }

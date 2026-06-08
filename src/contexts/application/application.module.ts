@@ -5,6 +5,7 @@ import * as userUseCases from '@/contexts/application/usecases/users';
 import * as subTaskUseCases from '@/contexts/application/usecases/subtasks';
 import * as tagsUseCases from '@/contexts/application/usecases/tags';
 import * as tasksUseCases from '@/contexts/application/usecases/tasks';
+import * as commentUseCases from '@/contexts/application/usecases/comments';
 import * as repositories from '@/contexts/infrastructure/repositories';
 import * as services from '@/contexts/infrastructure/services';
 
@@ -82,6 +83,7 @@ import { JwtModule } from '@nestjs/jwt';
     ...Object.values(tasksUseCases),
     ...Object.values(subTaskUseCases),
     ...Object.values(tagsUseCases),
+    ...Object.values(commentUseCases),
 
     // Add all strategies and services for the use in use-cases
     PrismaService,
@@ -114,6 +116,10 @@ import { JwtModule } from '@nestjs/jwt';
       useClass: repositories.PrismaTaskRepository,
     },
     {
+      provide: 'commentRepository',
+      useClass: repositories.PrismaCommentRepository,
+    },
+    {
       provide: 'mailService',
       useClass: services.NestMailRepository,
     },
@@ -133,6 +139,7 @@ import { JwtModule } from '@nestjs/jwt';
     ...Object.values(tasksUseCases),
     ...Object.values(subTaskUseCases),
     ...Object.values(tagsUseCases),
+    ...Object.values(commentUseCases),
   ],
 
 })

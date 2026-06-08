@@ -51,9 +51,7 @@ export class AuthService implements AuthServicePort {
     }
 
     // Crear el payload con el ID y el email del usuario
-    const payload = { userId: user.id, email: user.email };
-
-    console.log("Payload generado:", JSON.stringify(payload, null, 2));
+    const payload = { userId: user.id, email: user.email, roles: user.roles || [] };
 
     // Generar y retornar el token de acceso
     return { access_token: this.jwtService.sign(payload) };

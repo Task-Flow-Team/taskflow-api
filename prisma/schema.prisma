@@ -35,9 +35,12 @@ model User {
   tasks               Task[]    @relation("CreatedTasks")
   assignedTasks       Task[]    @relation("AssignedTasks")
   collaborations      WorkspaceCollaborator[]
+  assignedSubtasks    Subtasks[]  @relation("AssignedSubtasks")
+  createdSubtasks     Subtasks[]  @relation("CreatedSubtasks")
   tags                Tags[]
   notifications       Notifications[]
   activityLogs        ActivityLogs[]
+  comments            Comment[]
   settings            Settings[]
   accounts            Account[]
   sessions            Session[]
@@ -71,13 +74,18 @@ model Task {
   updated_at   DateTime  @default(now()) @updatedAt
   due_date     DateTime?
   completed_at DateTime?
-  assignedTo   String    @db.Uuid
+  assignedTo   String?   @db.Uuid
   user         User      @relation("CreatedTasks", fields: [createdBy], references: [id])
-  assignedUser User      @relation("AssignedTasks", fields: [assignedTo], references: [id])
+  assignedUser User?     @relation("AssignedTasks", fields: [assignedTo], references: [id])
   workspace    Workspace @relation(fields: [workspace_id], references: [id])
   subtasks     Subtasks[]
   taskTags     TaskTags[]
   reminders    Reminders[]
+  comments     Comment[]
+
+  @@index([workspace_id])
+  @@index([assignedTo])
+  @@index([createdBy])
 }
 
 model WorkspaceCollaborator {
@@ -89,10 +97,11 @@ model WorkspaceCollaborator {
   workspace       Workspace @relation(fields: [workspace_id], references: [id])
 
   @@id([collaborator_id, workspace_id])
+  @@index([collaborator_id])
 }
 
 model Subtasks {
-  subtask_id   String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  subtask_id   String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   task_id      String    @db.Uuid
   createdBy    String    @db.Uuid
   title        String    @db.VarChar(255)
@@ -103,11 +112,13 @@ model Subtasks {
   updated_at   DateTime  @default(now()) @updatedAt
   due_at       DateTime?
   completed_at DateTime?
-  assignedTo   String    @db.Uuid
+  assignedTo   String?   @db.Uuid
   task         Task      @relation(fields: [task_id], references: [task_id])
+  assignedUser User?     @relation("AssignedSubtasks", fields: [assignedTo], references: [id])
+  creator      User      @relation("CreatedSubtasks", fields: [createdBy], references: [id])
 
-  @@id([subtask_id, task_id])
-  @@unique([subtask_id])
+  @@index([task_id])
+  @@index([assignedTo])
 }
 
 model Tags {
@@ -119,6 +130,8 @@ model Tags {
   user         User      @relation(fields: [created_by], references: [id])
   workspace    Workspace? @relation(fields: [workspace_id], references: [id])
   taskTags     TaskTags[]
+
+  @@index([workspace_id])
 }
 
 model TaskTags {
@@ -145,6 +158,8 @@ model Notifications {
   message           String
   created_at        DateTime @default(now())
   user              User     @relation(fields: [user_id], references: [id])
+
+  @@index([user_id])
 }
 
 model ActivityLogs {
@@ -155,6 +170,23 @@ model ActivityLogs {
   timestamp    DateTime  @default(now())
   user         User      @relation(fields: [user_id], references: [id])
   workspace    Workspace @relation(fields: [workspace_id], references: [id])
+
+  @@index([workspace_id])
+  @@index([user_id])
+}
+
+model Comment {
+  comment_id  String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  task_id     String   @db.Uuid
+  user_id     String   @db.Uuid
+  content     String
+  created_at  DateTime @default(now())
+  updated_at  DateTime @default(now()) @updatedAt
+  task        Task     @relation(fields: [task_id], references: [task_id])
+  user        User     @relation(fields: [user_id], references: [id])
+
+  @@index([task_id])
+  @@index([user_id])
 }
 
 model Settings {

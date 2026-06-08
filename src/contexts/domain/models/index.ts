@@ -1,4 +1,5 @@
 export * from './auth.entity';
+export * from './comment.entity';
 export * from './mail.entity';
 export * from './subtask.entity';
 export * from './tags.entity';

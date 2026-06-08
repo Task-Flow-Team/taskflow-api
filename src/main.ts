@@ -3,6 +3,7 @@ import { AppModule } from '@/app/app.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -26,6 +27,11 @@ async function bootstrap() {
     credentials: true, // Permitir envío de cookies
   });
 
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    forbidNonWhitelisted: true,
+    transform: true,
+  }));
 
   // Configurar Redis
   const redisUrl = new URL(configService.get<string>('REDIS_URL'));

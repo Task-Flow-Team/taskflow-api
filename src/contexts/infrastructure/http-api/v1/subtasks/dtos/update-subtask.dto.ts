@@ -1,6 +1,6 @@
 import { IsString, IsOptional, IsEnum, IsInt, IsDateString, IsUUID } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { TaskStatus } from '@/contexts/shared/lib/types';
+import { TaskStatus, TaskStatusEnum } from '@/contexts/shared/lib/types';
 
 export class UpdateSubTaskDto {
   @ApiPropertyOptional({
@@ -25,6 +25,7 @@ export class UpdateSubTaskDto {
     example: 'IN_PROGRESS',
   })
   @IsOptional()
+  @IsEnum(TaskStatusEnum, { message: 'status must be one of: OPEN, IN_PROGRESS, COMPLETED' })
   status?: TaskStatus;
 
   @ApiPropertyOptional({

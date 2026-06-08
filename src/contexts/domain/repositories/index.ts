@@ -1,3 +1,4 @@
+export * from './comment.repository.port';
 export * from './subtask.repository.port';
 export * from './tag.repository.port';
 export * from './task.repository.port';

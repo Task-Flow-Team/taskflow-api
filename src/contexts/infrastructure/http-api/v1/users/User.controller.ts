@@ -18,7 +18,8 @@ import * as UserUseCases from '@/contexts/application/usecases/users';
 import * as AuthDtos from '@/contexts/infrastructure/http-api/v1/auth/dtos';
 import * as AuthUseCases from '@/contexts/application/usecases/auth';
 import { API_VERSION } from "@/contexts/infrastructure/http-api/v1/route.constants";
-import { User, UserProfile, UserProfileWithoutCreatedAt, UserSettings } from "@/contexts/domain/models/";
+import { User, UserProfile, UserSettings } from "@/contexts/domain/models/";
+import { UpdateUserProfileDto, UpdateUserSettingsDto } from '@/contexts/infrastructure/http-api/v1/users/dtos';
 
 @ApiTags('Users')               // Para agrupar en la doc de Swagger
 @ApiBearerAuth()                // Indica que se usa el JWT "Es para swagger"
@@ -49,7 +50,7 @@ export class UserController {
     @HttpCode(HttpStatus.OK)
     @Roles('ADMIN')
     async getUserById(@Param('id') userId: string): Promise<User> {
-        if (!userId) throw new BadRequestException('Se requiere el ID del usuario');
+        if (!userId) throw new BadRequestException('User ID is required');
         return await this.getUserByIdUseCase.run(userId);
     }
 
@@ -57,9 +58,9 @@ export class UserController {
     @HttpCode(HttpStatus.OK)
     @Roles('ADMIN')
     async getUserByEmail(@Param('email') email: string): Promise<User> {
-        if (!email) throw new BadRequestException('Se requiere el correo electrónico');
+        if (!email) throw new BadRequestException('Email is required');
         const user = await this.getUserByEmailUseCase.run(email);
-        if (!user) throw new NotFoundException(`Usuario con correo ${email} no encontrado`);
+        if (!user) throw new NotFoundException(`User with email ${email} not found`);
         return user;
     }
 
@@ -67,9 +68,9 @@ export class UserController {
     @HttpCode(HttpStatus.OK)
     @Roles('ADMIN')
     async getUserByUsername(@Param('username') username: string): Promise<User> {
-        if (!username) throw new BadRequestException('Se requiere el nombre de usuario');
+        if (!username) throw new BadRequestException('Username is required');
         const user = await this.getUserByUsernameUseCase.run(username);
-        if (!user) throw new NotFoundException(`Usuario con nombre de usuario ${username} no encontrado`);
+        if (!user) throw new NotFoundException(`User with username ${username} not found`);
         return user;
     }
 
@@ -77,7 +78,7 @@ export class UserController {
     @Roles('ADMIN')
     @HttpCode(HttpStatus.OK)
     async deleteUser(@Param('id') userId: string): Promise<{ message: string }> {
-        if (!userId) throw new BadRequestException('Se requiere el ID del usuario');
+        if (!userId) throw new BadRequestException('User ID is required');
         return this.deleteUserUseCase.run(userId);
     }
 
@@ -98,8 +99,7 @@ export class UserController {
     @Get('profile/me')
     @HttpCode(HttpStatus.OK)
     async getUserProfile(@UserDecorator('userId') userId: string): Promise<UserProfile> {
-        console.log('Payload completo:', userId);
-        if (!userId) throw new BadRequestException('Se requiere el ID del usuario');
+        if (!userId) throw new BadRequestException('User ID is required');
         return this.getProfileUseCase.run(userId);
     }
 
@@ -107,14 +107,14 @@ export class UserController {
     @HttpCode(HttpStatus.OK)
     async updateUserProfile(
       @UserDecorator('userId') userId: string,
-      @Body() profileDto: UserProfileWithoutCreatedAt,
+      @Body() profileDto: UpdateUserProfileDto,
     ): Promise<{ message: string; profile: UserProfile }> {
         if (!userId) {
-            throw new BadRequestException('Se requiere el ID del usuario');
+            throw new BadRequestException('User ID is required');
         }
-        const updatedProfile = await this.updateProfileUseCase.run(userId, profileDto);
+        const updatedProfile = await this.updateProfileUseCase.run(userId, profileDto as any);
         return {
-            message: 'Perfil actualizado exitosamente',
+            message: 'Profile updated successfully',
             profile: updatedProfile,
         };
     }
@@ -122,15 +122,15 @@ export class UserController {
     @Get('settings/me')
     @HttpCode(HttpStatus.OK)
     async getUserSettings(@UserDecorator('email') userEmail: string): Promise<UserSettings> {
-        if (!userEmail) throw new BadRequestException('Se requiere el correo electrónico del usuario');
+        if (!userEmail) throw new BadRequestException('Email is required');
         return this.getSettingsUseCase.run(userEmail);
     }
 
     @Post('settings/update')
     @HttpCode(HttpStatus.OK)
-    async updateUserSettings(@UserDecorator('userId') userId: string, @Body() settingsDto: UserSettings): Promise<{ message: string; settings: UserSettings }> {
-        if (!userId) throw new BadRequestException('Se requiere el ID del usuario');
-        const updatedSettings = await this.updateSettingsUseCase.run(userId, settingsDto);
+    async updateUserSettings(@UserDecorator('userId') userId: string, @Body() settingsDto: UpdateUserSettingsDto): Promise<{ message: string; settings: any }> {
+        if (!userId) throw new BadRequestException('User ID is required');
+        const updatedSettings = await this.updateSettingsUseCase.run(userId, settingsDto as any);
         return {
             message: 'Settings successfully updated.',
             settings: updatedSettings,

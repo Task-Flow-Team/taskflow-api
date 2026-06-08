@@ -1,11 +1,18 @@
 import { IsString, IsOptional, IsEnum, IsInt, IsDateString, IsUUID } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { TaskStatus } from '@/contexts/shared/lib/types';
+import { TaskStatus, TaskStatusEnum } from '@/contexts/shared/lib/types';
 
 export class CreateSubTaskDto {
   @ApiProperty({
-    description: 'Título de la subtarea.',
-    example: 'Implementar funcionalidad de login',
+    description: 'UUID of the parent task this subtask belongs to.',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+  })
+  @IsUUID()
+  task_id: string;
+
+  @ApiProperty({
+    description: 'Title of the subtask.',
+    example: 'Implement login functionality',
   })
   @IsString()
   title: string;
@@ -24,6 +31,7 @@ export class CreateSubTaskDto {
     example: 'OPEN',
   })
   @IsOptional()
+  @IsEnum(TaskStatusEnum, { message: 'status must be one of: OPEN, IN_PROGRESS, COMPLETED' })
   status?: TaskStatus;
 
   @ApiPropertyOptional({

@@ -3,8 +3,6 @@ import {
   Post,
   UseGuards,
   Body,
-  UsePipes,
-  ValidationPipe,
   Query,
   Get,
   HttpStatus,
@@ -12,6 +10,7 @@ import {
   Req,
   UnauthorizedException,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { AuthGuard } from '@nestjs/passport';
 import * as AuthUseCases from '@/contexts/application/usecases/auth';
 import { Public } from '@/contexts/shared/lib/decorators';
@@ -34,6 +33,7 @@ export class AuthController {
 
   @Public()
   @UseGuards(AuthGuard('local'))
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(
@@ -43,8 +43,8 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('register')
-  @UsePipes(new ValidationPipe())
   @HttpCode(HttpStatus.CREATED)
   async register(
     @Body() registerBody: AuthDtos.RegisterRequestDto,
@@ -69,7 +69,6 @@ export class AuthController {
 
   @Public()
   @Post('verify-email')
-  @UsePipes(new ValidationPipe())
   @HttpCode(HttpStatus.OK)
   async verifyEmail(
     @Body() verifyEmailBody: AuthDtos.VerifyEmailRequestDto,
@@ -101,6 +100,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
   async resetPassword(

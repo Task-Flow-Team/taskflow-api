@@ -1,9 +1,9 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, HttpStatus, HttpCode, UsePipes, ValidationPipe, BadRequestException, UseGuards, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, HttpStatus, HttpCode, BadRequestException, UseGuards, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { UpdateTaskDto, CreateTaskDto } from '@/contexts/infrastructure/http-api/v1/tasks/dtos';
 import { API_VERSION } from '@/contexts/infrastructure/http-api/v1/';
 import * as TaskUseCases from '@/contexts/application/usecases/tasks';
 import { Roles, User as UserDecorator } from '@/contexts/shared/lib/decorators';
-import { JwtAuthGuard } from '@/contexts/shared/lib/guards';
+import { JwtAuthGuard, WorkspaceMemberGuard } from '@/contexts/shared/lib/guards';
 import { Task } from '@/contexts/domain/models';
 import { ApiBearerAuth } from '@nestjs/swagger';
 
@@ -27,7 +27,6 @@ export class TaskController {
 
   // Create a new task
   @Post()
-  @UsePipes(new ValidationPipe())
   @HttpCode(HttpStatus.CREATED)
   async createTask(@UserDecorator('userId') userId: string, @Body() taskDto: CreateTaskDto) {
     const task = await this.createTaskUseCase.run(userId, taskDto);
@@ -46,6 +45,7 @@ export class TaskController {
 
   // Get all tasks of a workspace
   @Get('workspace/:workspaceId')
+  @UseGuards(WorkspaceMemberGuard)
   @HttpCode(HttpStatus.OK)
   async getAllTasksByWorkspace(@Param('workspaceId') workspaceId: string): Promise<Task[]> {
     return await this.getAllTasksByWorkspaceUseCase.run(workspaceId);
@@ -82,7 +82,6 @@ export class TaskController {
 
   // Update an existing task
   @Put(':id')
-  @UsePipes(new ValidationPipe())
   @HttpCode(HttpStatus.OK)
   async updateTask(@UserDecorator('userId') userId: string, @Param('id') taskId: string, @Body() taskDto: UpdateTaskDto) {
     const updatedTask = await this.updateTaskUseCase.run(userId, taskId, taskDto);

@@ -1,4 +1,4 @@
-import { TaskStatus } from '@/contexts/shared/lib/types';
+import { TaskStatus, TaskStatusEnum } from '@/contexts/shared/lib/types';
 import { IsString, IsOptional, IsEnum, IsInt, IsDateString, IsUUID } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -17,12 +17,13 @@ export class CreateTaskDto {
   @IsString()
   title: string;
 
-  @ApiProperty({
-    description: 'Descripción detallada de la tarea.',
-    example: 'Implementar el flujo de autenticación utilizando JWT en NestJS.',
+  @ApiPropertyOptional({
+    description: 'Detailed description of the task.',
+    example: 'Implement the authentication flow using JWT in NestJS.',
   })
+  @IsOptional()
   @IsString()
-  description: string;
+  description?: string;
 
   @ApiPropertyOptional({
     description: 'Estado de la tarea. Puede ser "OPEN", "IN_PROGRESS" o "COMPLETED".',
@@ -30,7 +31,8 @@ export class CreateTaskDto {
     example: 'OPEN',
   })
   @IsOptional()
-  status: TaskStatus;
+  @IsEnum(TaskStatusEnum, { message: 'status must be one of: OPEN, IN_PROGRESS, COMPLETED' })
+  status?: TaskStatus;
 
   @ApiPropertyOptional({
     description: 'Prioridad de la tarea. Valor numérico que indica la importancia.',
