@@ -18,23 +18,25 @@ críticos  y base    core      y reportes  completo  y CI/CD
 
 ## Phase 0 — Bugfixes Críticos
 
+> ✅ COMPLETED — 2026-06-08 | 18 bugs fixed, 42/42 verification criteria passed
+
 > Sin esto no se avanza. Son bugs que generan pérdida de datos o vulnerabilidades de seguridad.
 
 ### Backend
 
-- [ ] **[BUG]** Agregar `await` faltante en `deleteUser` — `prismaUser.repository.adapter.ts`
-- [ ] **[BUG]** Agregar `await` faltante en `updateTask` — `Task.controller.ts`
-- [ ] **[SECURITY]** Corregir IDOR en endpoints de tareas — agregar autorización por recurso en `Task.controller.ts`
-- [ ] **[SECURITY]** Cambiar `GET /auth/logout` a `POST /auth/logout`
-- [ ] **[SECURITY]** Verificar conflicto entre `@Public()` y `@UseGuards(JwtAuthGuard)` en `Auth.controller.ts`
-- [ ] **[BUG]** Reemplazar `throw new Error(...)` por `UnauthorizedException` en logout
-- [ ] **[SCHEMA]** Agregar `@id` a `Task` en `schema.prisma`
-- [ ] **[SCHEMA]** Agregar FK real para `assignedTo` en modelo `Task`
-- [ ] **[DEPS]** Alinear versiones de NestJS a v11 en `package.json`
-- [ ] **[REFACTOR]** Renombrar `workspsace.entity.ts` → `workspace.entity.ts`
-- [ ] **[REFACTOR]** Renombrar `workspsace.repository.port.ts` → `workspace.repository.port.ts`
-- [ ] **[REFACTOR]** Unificar idioma de respuestas del API a inglés
-- [ ] **[PERF]** Reemplazar doble `findUnique` en `createNewUser` por `try/catch` con código Prisma `P2002`
+- [x] **[BUG]** Agregar `await` faltante en `deleteUser` — `prismaUser.repository.adapter.ts`
+- [x] **[BUG]** Agregar `await` faltante en `updateTask` — `Task.controller.ts`
+- [x] **[SECURITY]** Corregir IDOR en endpoints de tareas — agregar autorización por recurso en `Task.controller.ts`
+- [x] **[SECURITY]** Cambiar `GET /auth/logout` a `POST /auth/logout`
+- [x] **[SECURITY]** Verificar conflicto entre `@Public()` y `@UseGuards(JwtAuthGuard)` en `Auth.controller.ts`
+- [x] **[BUG]** Reemplazar `throw new Error(...)` por `UnauthorizedException` en logout
+- [x] **[SCHEMA]** Agregar `@id` a `Task` en `schema.prisma`
+- [x] **[SCHEMA]** Agregar FK real para `assignedTo` en modelo `Task`
+- [x] **[DEPS]** Alinear versiones de NestJS a v11 en `package.json`
+- [x] **[REFACTOR]** Renombrar `workspsace.entity.ts` → `workspace.entity.ts`
+- [x] **[REFACTOR]** Renombrar `workspsace.repository.port.ts` → `workspace.repository.port.ts`
+- [x] **[REFACTOR]** Unificar idioma de respuestas del API a inglés
+- [x] **[PERF]** Reemplazar doble `findUnique` en `createNewUser` por `try/catch` con código Prisma `P2002`
 
 ### Frontend
 
@@ -226,12 +228,12 @@ críticos  y base    core      y reportes  completo  y CI/CD
 ## Progreso actual
 
 ```
-Phase 0 — Bugs críticos:        0 / 15  ░░░░░░░░░░  0%
-Phase 1 — Estabilización:       0 / 18  ░░░░░░░░░░  0%
-Phase 2 — Features core:        0 / 22  ░░░░░░░░░░  0%
-Phase 3 — Analytics:            0 / 18  ░░░░░░░░░░  0%
-Phase 4 — Complementarias:      0 / 12  ░░░░░░░░░░  0%
-Phase 5 — Deploy:               0 / 12  ░░░░░░░░░░  0%
+Phase 0 — Bugs críticos:        13 / 13  ██████████  100% ✅
+Phase 1 — Estabilización:        0 / 18  ░░░░░░░░░░  0%
+Phase 2 — Features core:         0 / 22  ░░░░░░░░░░  0%
+Phase 3 — Analytics:             0 / 18  ░░░░░░░░░░  0%
+Phase 4 — Complementarias:       0 / 12  ░░░░░░░░░░  0%
+Phase 5 — Deploy:                0 / 12  ░░░░░░░░░░  0%
 ```
 
 ---
