@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '@/contexts/shared/prisma/prisma.service';
 import { CommentRepository } from '@/contexts/domain/repositories/comment.repository.port';
 import { Comment } from '@/contexts/domain/models/comment.entity';
+import { PaginatedResponse, encodeCursor, decodeCursor } from '@/contexts/shared/pagination.types';
 
 @Injectable()
 export class PrismaCommentRepository implements CommentRepository {
@@ -32,11 +33,21 @@ export class PrismaCommentRepository implements CommentRepository {
     await this.db.comment.delete({ where: { comment_id: commentId } });
   }
 
-  async getCommentsByTaskId(taskId: string): Promise<Comment[]> {
-    return await this.db.comment.findMany({
-      where: { task_id: taskId },
-      orderBy: { created_at: 'desc' },
-    });
+  async getCommentsByTaskId(taskId: string, cursor?: string, limit = 20): Promise<PaginatedResponse<Comment>> {
+    const decodedCursor = cursor ? decodeCursor(cursor) : undefined;
+    const [items, total] = await Promise.all([
+      this.db.comment.findMany({
+        where: { task_id: taskId },
+        take: limit + 1,
+        ...(decodedCursor && { cursor: { comment_id: decodedCursor }, skip: 1 }),
+        orderBy: { created_at: 'asc' },
+      }),
+      this.db.comment.count({ where: { task_id: taskId } }),
+    ]);
+    const hasMore = items.length > limit;
+    const data = hasMore ? items.slice(0, -1) : items;
+    const nextCursor = hasMore ? encodeCursor(data[data.length - 1].comment_id) : null;
+    return { data, nextCursor, total };
   }
 
   async getCommentById(commentId: string): Promise<Comment> {

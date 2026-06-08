@@ -1,4 +1,5 @@
 import { Workspace, WorkspaceCollaborator } from '@/contexts/domain/models';
+import { PaginatedResponse } from '@/contexts/shared/pagination.types';
 
 export abstract class WorkspaceRepository {
   /**
@@ -28,7 +29,7 @@ export abstract class WorkspaceRepository {
    * 
    * @throws NotFoundException If the user with the provided userId is not found.
    */
-  abstract getAllWorkspacesOfUserId(userId: string): Promise<Workspace[]>;
+  abstract getAllWorkspacesOfUserId(userId: string, cursor?: string, limit?: number): Promise<PaginatedResponse<Workspace>>;
 
   /**
    * Method for getting all workspaces Created by a specific user.

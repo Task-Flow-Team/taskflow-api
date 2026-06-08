@@ -3,6 +3,7 @@ import { PrismaService } from '@/contexts/shared/prisma/prisma.service';
 import { Workspace, WorkspaceCollaborator } from '@/contexts/domain/models';
 import { WorkspaceRepository } from '@/contexts/domain/repositories';
 import { AlreadyExistsException } from '@/contexts/shared/lib/errors';
+import { PaginatedResponse, encodeCursor, decodeCursor } from '@/contexts/shared/pagination.types';
 
 @Injectable()
 export class PrismaWorkspaceRepository implements WorkspaceRepository {
@@ -18,7 +19,7 @@ export class PrismaWorkspaceRepository implements WorkspaceRepository {
 
   }
 
-  async getAllWorkspacesOfUserId(userId: string): Promise<Workspace[]> {
+  async getAllWorkspacesOfUserId(userId: string, cursor?: string, limit = 20): Promise<PaginatedResponse<Workspace>> {
 
     // Check if the userId is provided
     if(!userId) throw new BadRequestException('userId is required');
@@ -27,33 +28,35 @@ export class PrismaWorkspaceRepository implements WorkspaceRepository {
     const user = await this.db.user.findUnique({ where: { id: userId } });
     if(!user) throw new NotFoundException(`User with ID ${userId} not found`);
 
-    // Find the workspaces owned by the user with the provided userId
-    const ownedWorkspaces = await this.db.workspace.findMany({
-      where: { user_id: userId },
-    });
+    const decodedCursor = cursor ? decodeCursor(cursor) : undefined;
 
-    // Find the workspaces where the user is a collaborator using a subquery
-    const collaboratedWorkspaces = await this.db.workspace.findMany({
-      where: {
-        collaborators: {
-          some: {
-            collaborator_id: userId,
-          },
+    const [items, total] = await Promise.all([
+      this.db.workspace.findMany({
+        where: {
+          OR: [
+            { user_id: userId },
+            { collaborators: { some: { collaborator_id: userId } } },
+          ],
         },
-      },
-    });
+        take: limit + 1,
+        ...(decodedCursor && { cursor: { id: decodedCursor }, skip: 1 }),
+        orderBy: { created_at: 'asc' },
+      }),
+      this.db.workspace.count({
+        where: {
+          OR: [
+            { user_id: userId },
+            { collaborators: { some: { collaborator_id: userId } } },
+          ],
+        },
+      }),
+    ]);
 
-    // Combine the owned and collaborated workspaces into a single array
-    const allWorkspaces = [...ownedWorkspaces, ...collaboratedWorkspaces];
+    const hasMore = items.length > limit;
+    const data = hasMore ? items.slice(0, -1) : items;
+    const nextCursor = hasMore ? encodeCursor(data[data.length - 1].id) : null;
 
-    // Filter out any duplicates based on the workspace ID
-    const uniqueWorkspaces = allWorkspaces.filter(
-      (workspace, index, self) =>
-        index === self.findIndex((t) => t.id === workspace.id),
-    );
-
-    // Return the unique workspaces of the user
-    return uniqueWorkspaces;
+    return { data, nextCursor, total };
   }
 
   async getWorkspacesByUserId(userId: string): Promise<Workspace[]> {

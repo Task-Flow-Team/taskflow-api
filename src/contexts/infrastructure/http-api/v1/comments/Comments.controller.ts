@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, HttpStatus, HttpCode, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, HttpStatus, HttpCode, UseGuards } from '@nestjs/common';
 import { API_VERSION } from '@/contexts/infrastructure/http-api/v1/route.constants';
 import { CreateCommentDto, UpdateCommentDto } from './dtos';
 import * as CommentUseCases from '@/contexts/application/usecases/comments';
@@ -32,8 +32,12 @@ export class CommentController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  async getCommentsByTask(@Param('taskId') taskId: string) {
-    return await this.getCommentsByTaskUseCase.run(taskId);
+  async getCommentsByTask(
+    @Param('taskId') taskId: string,
+    @Query('cursor') cursor?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return await this.getCommentsByTaskUseCase.run(taskId, cursor, parseInt(limit ?? '20', 10));
   }
 
   @Get(':commentId')

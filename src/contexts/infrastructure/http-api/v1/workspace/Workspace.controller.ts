@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, HttpStatus, HttpCode, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, HttpStatus, HttpCode, UseGuards } from '@nestjs/common';
 import { CreateWorkspaceDto, UpdateWorkspaceDto, AddCollaboratorDto } from '@/contexts/infrastructure/http-api/v1/workspace/dtos';
 import { API_VERSION } from '@/contexts/infrastructure/http-api/v1/';
 import * as WorkspaceUseCases from '@/contexts/application/usecases/workspaces';
@@ -49,8 +49,12 @@ export class WorkspaceController {
   // Get all workspaces of the user (as owner or collaborator)
   @Get('my-workspaces')
   @HttpCode(HttpStatus.OK)
-  async getMyWorkspaces(@UserDecorator('userId') userId: string): Promise<Workspace[]> {
-    return await this.getWorkspacesOfUserUseCase.run(userId);
+  async getMyWorkspaces(
+    @UserDecorator('userId') userId: string,
+    @Query('cursor') cursor?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return await this.getWorkspacesOfUserUseCase.run(userId, cursor, parseInt(limit ?? '20', 10));
   }
 
   // Get all workspaces of a user as collaborator
