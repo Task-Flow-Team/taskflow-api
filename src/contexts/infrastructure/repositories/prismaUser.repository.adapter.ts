@@ -15,6 +15,8 @@ import {
   verificationToken,
 } from '@/contexts/domain/models/user.entity';
 
+import { Prisma } from '@prisma/client';
+
 /**
  *  Class that implements the UserRepository interface using Prisma ORM.
  *  This class is responsible for interacting with the database and performing CRUD operations on the User entity.
@@ -31,18 +33,16 @@ export class PrismaUserRepository implements UserRepository {
     // Check if the passwordHashed is provided
     if(!passwordHashed) throw new BadRequestException('Password is required');
 
-    // Check if the email already exists
-    const existingEmail = await this.db.user.findUnique({ where: { email: userBody.email } });
-    if(existingEmail) throw new AlreadyExistsException('Email already exists.');
-
-    // Check if the username already exists
-    const existingUsername = await this.db.user.findUnique({ where: { username: userBody.username } });
-    if(existingUsername) throw new AlreadyExistsException('Username already exists.');
-
-    // Create a new user with the provided userBody and passwordHashed
-    return this.db.user.create({
-      data: { ...userBody, password: passwordHashed },
-    });
+    try {
+      return await this.db.user.create({
+        data: { ...userBody, password: passwordHashed },
+      });
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
+        throw new AlreadyExistsException('Email or username already exists.');
+      }
+      throw e;
+    }
 
   }
 
@@ -56,17 +56,17 @@ export class PrismaUserRepository implements UserRepository {
     if (!deleteUser) throw new NotFoundException(`User with ID ${userId} not found.`);
 
     // Delete the user from the database if no errors were thrown
-    this.db.user.delete({
+    await this.db.user.delete({
       where: { id: userId },
     });
     
   }
 
   async findByEmail(email: string): Promise<User4Token> {
-    // Validar que se proporcione el email
+    // Validate that the email is provided
     if (!email) throw new BadRequestException('Email is required');
 
-    // Consultar el usuario en la base de datos
+    // Query the user in the database
     const user = await this.db.user.findUnique({
       where: { email },
       select: {
@@ -75,12 +75,12 @@ export class PrismaUserRepository implements UserRepository {
       },
     });
 
-    // Si no se encuentra, lanzar una excepción
+    // If not found, throw an exception
     if (!user) {
       throw new NotFoundException(`User with email ${email} not found`);
     }
 
-    // Retorna solo las propiedades necesarias
+    // Return only the necessary properties
     return user;
   }
 
@@ -102,11 +102,8 @@ export class PrismaUserRepository implements UserRepository {
     // Check if the email is provided
     if(!email) throw new BadRequestException('Email is required');
 
-    // Find the user by the provided email, and throw an error if it doesn't exist
-    const user = await this.db.user.findUnique({ where: { email: email } });
-    if (!user) throw new NotFoundException(`User with email ${email} not found`);
-
-    return user;
+    // Return null if not found — contract: Promise<User | null>
+    return this.db.user.findUnique({ where: { email: email } });
   }
 
   async findUniqueByUsername(username: string): Promise<User | null> {
@@ -114,10 +111,8 @@ export class PrismaUserRepository implements UserRepository {
     // Check if the username is provided
     if (!username) throw new BadRequestException('Username is required');
 
-    const user = await this.db.user.findUnique({ where: { username: username } });
-    if (!user) throw new NotFoundException(`User with username ${username} not found`);
-
-    return user;
+    // Return null if not found — contract: Promise<User | null>
+    return this.db.user.findUnique({ where: { username: username } });
   }
 
   async getPublicProfile(userId: string): Promise<UserProfile> {
