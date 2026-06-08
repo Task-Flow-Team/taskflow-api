@@ -1,12 +1,14 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, HttpStatus, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, HttpStatus, HttpCode, UseGuards } from '@nestjs/common';
 import { API_VERSION } from '@/contexts/infrastructure/http-api/v1/route.constants';
 import { CreateCommentDto, UpdateCommentDto } from './dtos';
 import * as CommentUseCases from '@/contexts/application/usecases/comments';
 import { User as UserDecorator } from '@/contexts/shared/lib/decorators';
+import { JwtAuthGuard } from '@/contexts/shared/lib/guards';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Comments')
 @ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller(`${API_VERSION}/tasks/:taskId/comments`)
 export class CommentController {
   constructor(

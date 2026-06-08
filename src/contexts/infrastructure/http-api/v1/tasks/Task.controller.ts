@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, HttpStatus, HttpCode, BadRequestException, UseGuards, ForbiddenException, NotFoundException } from '@nestjs/common';
-import { UpdateTaskDto, CreateTaskDto } from '@/contexts/infrastructure/http-api/v1/tasks/dtos';
+import { Controller, Get, Post, Put, Patch, Delete, Body, Param, HttpStatus, HttpCode, BadRequestException, UseGuards, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { AssignTaskDto, UpdateTaskDto, CreateTaskDto } from '@/contexts/infrastructure/http-api/v1/tasks/dtos';
 import { API_VERSION } from '@/contexts/infrastructure/http-api/v1/';
 import * as TaskUseCases from '@/contexts/application/usecases/tasks';
 import { Roles, User as UserDecorator } from '@/contexts/shared/lib/decorators';
@@ -23,6 +23,7 @@ export class TaskController {
     private readonly getAllTasksOfUserUseCase: TaskUseCases.GetAllTasksOfUserUseCase,
     private readonly getAllTasksUseCase: TaskUseCases.GetAllTasksUseCase,
     private readonly getTaskByIdUseCase: TaskUseCases.GetTaskByIdUseCase,
+    private readonly assignTaskUseCase: TaskUseCases.AssignTaskUseCase,
   ) {}
 
   // Create a new task
@@ -89,6 +90,18 @@ export class TaskController {
       message: 'Task updated successfully',
       task: updatedTask,
     };
+  }
+
+  // Assign a task to a workspace member
+  @Patch(':id/assign')
+  @HttpCode(HttpStatus.OK)
+  async assignTask(
+    @UserDecorator('userId') userId: string,
+    @Param('id') taskId: string,
+    @Body() dto: AssignTaskDto,
+  ) {
+    const task = await this.assignTaskUseCase.run(userId, taskId, dto.userId);
+    return { message: 'Task assigned successfully', task };
   }
 
   // Delete an existing task (ownership check)

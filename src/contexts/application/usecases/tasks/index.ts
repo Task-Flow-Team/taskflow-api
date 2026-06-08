@@ -1,3 +1,4 @@
+export * from './assignTask/assignTask.use-case';
 export * from './createTask/createTask.use-case';
 export * from './deleteTask/deleteTask.use-case';
 export * from './getAllTasks/getAllTasks.use-case';
