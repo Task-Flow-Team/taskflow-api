@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, HttpStatus, HttpCode, BadRequestException, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, HttpStatus, HttpCode, BadRequestException, UseGuards } from '@nestjs/common';
 import { API_VERSION } from '@/contexts/infrastructure/http-api/v1/';
 import { CreateSubTaskDto, UpdateSubTaskDto } from '@/contexts/infrastructure/http-api/v1/subtasks/dtos';
 import * as SubTaskUseCases from '@/contexts/application/usecases/subtasks';
@@ -87,7 +87,7 @@ export class SubTaskController {
   }
 
   // Update a subtask
-  @Put(':id')
+  @Patch(':id')
   @HttpCode(HttpStatus.OK)
   async updateSubTask(@UserDecorator() user, @Param('id') subTaskId: string, @Body() subTaskDto: UpdateSubTaskDto) {
     const updatedSubTask = await this.updateSubTaskUseCase.run(user.id, subTaskId, subTaskDto);

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query, HttpStatus, HttpCode, BadRequestException, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, HttpStatus, HttpCode, BadRequestException, UseGuards } from '@nestjs/common';
 import { CreateTagDto, UpdateTagDto } from '@/contexts/infrastructure/http-api/v1/tags/dtos';
 import { API_VERSION } from '@/contexts/infrastructure/http-api/v1/';
 import * as TagUseCases from '@/contexts/application/usecases/tags';
@@ -77,7 +77,7 @@ export class TagController {
   }
 
   // Update a tag
-  @Put(':id')
+  @Patch(':id')
   @HttpCode(HttpStatus.OK)
   async updateTag(@Param('id') tagId: string, @Body() tagDto: UpdateTagDto) {
     const updatedTag = await this.updateTagUseCase.run(tagId, tagDto);

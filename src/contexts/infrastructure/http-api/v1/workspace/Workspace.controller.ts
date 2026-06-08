@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, HttpStatus, HttpCode, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, HttpStatus, HttpCode, UseGuards } from '@nestjs/common';
 import { CreateWorkspaceDto, UpdateWorkspaceDto, AddCollaboratorDto } from '@/contexts/infrastructure/http-api/v1/workspace/dtos';
 import { API_VERSION } from '@/contexts/infrastructure/http-api/v1/';
 import * as WorkspaceUseCases from '@/contexts/application/usecases/workspaces';
@@ -84,7 +84,7 @@ export class WorkspaceController {
   }
 
   // Update an existing workspace
-  @Put(':id')
+  @Patch(':id')
   @UseGuards(WorkspaceMemberGuard)
   @HttpCode(HttpStatus.OK)
   async updateWorkspace(@Param('id') workspaceId: string, @Body() workspaceDto: UpdateWorkspaceDto) {

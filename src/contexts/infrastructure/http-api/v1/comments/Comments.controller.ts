@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, HttpStatus, HttpCode, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, HttpStatus, HttpCode, UseGuards } from '@nestjs/common';
 import { API_VERSION } from '@/contexts/infrastructure/http-api/v1/route.constants';
 import { CreateCommentDto, UpdateCommentDto } from './dtos';
 import * as CommentUseCases from '@/contexts/application/usecases/comments';
@@ -42,7 +42,7 @@ export class CommentController {
     return await this.getCommentByIdUseCase.run(commentId);
   }
 
-  @Put(':commentId')
+  @Patch(':commentId')
   @HttpCode(HttpStatus.OK)
   async updateComment(
     @Param('commentId') commentId: string,

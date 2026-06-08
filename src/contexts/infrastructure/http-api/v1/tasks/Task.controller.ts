@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Patch, Delete, Body, Param, HttpStatus, HttpCode, BadRequestException, UseGuards, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, HttpStatus, HttpCode, BadRequestException, UseGuards, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { AssignTaskDto, UpdateTaskDto, CreateTaskDto } from '@/contexts/infrastructure/http-api/v1/tasks/dtos';
 import { API_VERSION } from '@/contexts/infrastructure/http-api/v1/';
 import * as TaskUseCases from '@/contexts/application/usecases/tasks';
@@ -82,7 +82,7 @@ export class TaskController {
   }
 
   // Update an existing task
-  @Put(':id')
+  @Patch(':id')
   @HttpCode(HttpStatus.OK)
   async updateTask(@UserDecorator('userId') userId: string, @Param('id') taskId: string, @Body() taskDto: UpdateTaskDto) {
     const updatedTask = await this.updateTaskUseCase.run(userId, taskId, taskDto);
