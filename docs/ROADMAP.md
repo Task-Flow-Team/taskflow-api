@@ -2,7 +2,7 @@
 
 > Objetivo: reemplazar Monday.com para un equipo de 2 desarrolladores.
 > Stack: NestJS + Prisma + PostgreSQL + Redis (API) | Angular 18 + Tailwind (Web)
-> Última actualización: 2026-06-07
+> Última actualización: 2026-06-08
 
 ---
 
@@ -47,19 +47,21 @@ críticos  y base    core      y reportes  completo  y CI/CD
 
 ## Phase 1 — Estabilización del Schema y la Base
 
+> ✅ BACKEND COMPLETED — 2026-06-08 | 16 tasks, 4 blocks (Schema, Validation, Auth, Errors), 16/16 verification PASS
+
 > Dejar la API en un estado limpio y predecible antes de agregar features.
 
 ### Backend
 
-- [ ] Corregir `WorkspaceCollaborator.role` de `String` a `enum WorkspaceRole`
-- [ ] Agregar enum `Priority` (LOW / MEDIUM / HIGH / URGENT) para reemplazar `Int` en `Task` y `Subtasks`
-- [ ] Agregar modelo `Comment` con relación a `Task` y `User`
-- [ ] Agregar relación `Task.assignedToUser` con FK correcta a `User`
-- [ ] Migrar `Settings` de key-value genérico a campos tipados
-- [ ] Completar documentación Swagger en todos los controllers existentes
-- [ ] Agregar `ValidationPipe` global en `main.ts`
-- [ ] Configurar `class-transformer` con `excludeExtraneousValues` globalmente
-- [ ] Agregar rate limiting en endpoints de auth (`/login`, `/register`, `/reset-password`)
+- [x] Corregir `WorkspaceCollaborator.role` de `String` a `enum WorkspaceRole`
+- [x] Agregar enum `Priority` (LOW / MEDIUM / HIGH / URGENT) para reemplazar `Int` en `Task` y `Subtasks`
+- [x] Agregar modelo `Comment` con relación a `Task` y `User`
+- [x] Agregar relación `Task.assignedToUser` con FK correcta a `User`
+- [x] Migrar `Settings` de key-value genérico a campos tipados
+- [x] Completar documentación Swagger en todos los controllers existentes
+- [x] Agregar `ValidationPipe` global en `main.ts`
+- [x] Configurar `class-transformer` con `excludeExtraneousValues` globalmente
+- [x] Agregar rate limiting en endpoints de auth (`/login`, `/register`, `/reset-password`)
 
 ### Frontend
 
@@ -229,7 +231,7 @@ críticos  y base    core      y reportes  completo  y CI/CD
 
 ```
 Phase 0 — Bugs críticos:        13 / 13  ██████████  100% ✅
-Phase 1 — Estabilización:        0 / 18  ░░░░░░░░░░  0%
+Phase 1 — Estabilización:        9 /  9  ██████████  100% ✅ (Backend) | 0/6 Frontend
 Phase 2 — Features core:         0 / 22  ░░░░░░░░░░  0%
 Phase 3 — Analytics:             0 / 18  ░░░░░░░░░░  0%
 Phase 4 — Complementarias:       0 / 12  ░░░░░░░░░░  0%
