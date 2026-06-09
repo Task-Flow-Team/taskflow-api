@@ -8,6 +8,7 @@ import * as tasksUseCases from '@/contexts/application/usecases/tasks';
 import * as commentUseCases from '@/contexts/application/usecases/comments';
 import * as notificationUseCases from '@/contexts/application/usecases/notifications';
 import * as analyticsUseCases from '@/contexts/application/usecases/analytics';
+import * as reminderUseCases from '@/contexts/application/usecases/reminders';
 import * as repositories from '@/contexts/infrastructure/repositories';
 import * as services from '@/contexts/infrastructure/services';
 
@@ -59,6 +60,7 @@ import { JwtModule } from '@nestjs/jwt';
     ...Object.values(commentUseCases),
     ...Object.values(notificationUseCases),
     ...Object.values(analyticsUseCases),
+    ...Object.values(reminderUseCases),
 
     // Add all strategies and services for the use in use-cases
     PrismaService,
@@ -107,6 +109,10 @@ import { JwtModule } from '@nestjs/jwt';
       useClass: repositories.PrismaAnalyticsRepository,
     },
     {
+      provide: 'reminderRepository',
+      useClass: repositories.PrismaReminderRepository,
+    },
+    {
       provide: 'mailService',
       useClass: services.ResendMailService,
     },
@@ -120,6 +126,8 @@ import { JwtModule } from '@nestjs/jwt';
 
   // Export the use cases from the application module for the use in the infrastructure module
   exports: [
+    'reminderRepository',
+    'notificationRepository',
     ...Object.values(authUseCases),
     ...Object.values(userUseCases),
     ...Object.values(workspaceUseCases),
@@ -129,6 +137,7 @@ import { JwtModule } from '@nestjs/jwt';
     ...Object.values(commentUseCases),
     ...Object.values(notificationUseCases),
     ...Object.values(analyticsUseCases),
+    ...Object.values(reminderUseCases),
   ],
 
 })

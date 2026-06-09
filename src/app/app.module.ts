@@ -3,6 +3,7 @@ import { ApplicationModule } from '@/contexts/application/application.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
@@ -19,6 +20,7 @@ import { JwtService } from '@nestjs/jwt';
       isGlobal: true,
     }),
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 10 }]),
+    ScheduleModule.forRoot(),
     ApplicationModule,
     InfrastructureModule,
   ],

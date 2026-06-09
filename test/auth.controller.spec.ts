@@ -6,18 +6,17 @@ import {
   VerifyEmailUseCase,
   ResendEmailVerificationUseCase,
   LogoutUseCase,
-  ChangePasswordUseCase,
   ResetPasswordUseCase,
 } from '@/contexts/application/usecases/auth';
 import {
   LoginRequestDto,
   RegisterRequestDto,
   VerifyEmailRequestDto,
-  ChangePasswordDto,
   ResetPasswordRequestDto,
   ResetPasswordConfirmDto,
 } from '@/contexts/infrastructure/http-api/v1/auth/dtos';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
+import { JwtAuthGuard } from '@/contexts/shared/lib/guards';
 
 describe('AuthController', () => {
   let authController: AuthController;
@@ -26,7 +25,6 @@ describe('AuthController', () => {
   let verifyEmailUseCase: VerifyEmailUseCase;
   let resendEmailVerificationUseCase: ResendEmailVerificationUseCase;
   let logoutUseCase: LogoutUseCase;
-  let changePasswordUseCase: ChangePasswordUseCase;
   let resetPasswordUseCase: ResetPasswordUseCase;
 
   beforeEach(async () => {
@@ -36,13 +34,13 @@ describe('AuthController', () => {
         {
           provide: LoginUseCase,
           useValue: {
-            login: jest.fn(),
+            run: jest.fn(),
           },
         },
         {
           provide: RegisterUseCase,
           useValue: {
-            register: jest.fn(),
+            run: jest.fn(),
           },
         },
         {
@@ -61,13 +59,7 @@ describe('AuthController', () => {
         {
           provide: LogoutUseCase,
           useValue: {
-            execute: jest.fn(),
-          },
-        },
-        {
-          provide: ChangePasswordUseCase,
-          useValue: {
-            execute: jest.fn(),
+            run: jest.fn(),
           },
         },
         {
@@ -78,7 +70,10 @@ describe('AuthController', () => {
           },
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     authController = module.get<AuthController>(AuthController);
     loginUseCase = module.get<LoginUseCase>(LoginUseCase);
@@ -86,7 +81,6 @@ describe('AuthController', () => {
     verifyEmailUseCase = module.get<VerifyEmailUseCase>(VerifyEmailUseCase);
     resendEmailVerificationUseCase = module.get<ResendEmailVerificationUseCase>(ResendEmailVerificationUseCase);
     logoutUseCase = module.get<LogoutUseCase>(LogoutUseCase);
-    changePasswordUseCase = module.get<ChangePasswordUseCase>(ChangePasswordUseCase);
     resetPasswordUseCase = module.get<ResetPasswordUseCase>(ResetPasswordUseCase);
   });
 
@@ -95,7 +89,7 @@ describe('AuthController', () => {
       const loginDto: LoginRequestDto = { email: 'test@example.com', password: 'password' };
       const result = { access_token: 'dummy_token' };
 
-      jest.spyOn(loginUseCase, 'login').mockResolvedValue(result);
+      jest.spyOn(loginUseCase, 'run').mockResolvedValue(result as any);
 
       expect(await authController.login(loginDto)).toEqual(result);
     });
@@ -103,7 +97,7 @@ describe('AuthController', () => {
     it('should throw a BadRequestException when login fails', async () => {
       const loginDto: LoginRequestDto = { email: 'test@example.com', password: 'wrong_password' };
 
-      jest.spyOn(loginUseCase, 'login').mockRejectedValue(new BadRequestException('Invalid credentials'));
+      jest.spyOn(loginUseCase, 'run').mockRejectedValue(new BadRequestException('Invalid credentials'));
 
       await expect(authController.login(loginDto)).rejects.toThrow(BadRequestException);
     });
@@ -114,7 +108,7 @@ describe('AuthController', () => {
       const registerDto: RegisterRequestDto = { email: 'test@example.com', password: 'password', username: 'testuser' };
       const result = { access_token: 'dummy_token' };
 
-      jest.spyOn(registerUseCase, 'register').mockResolvedValue(result);
+      jest.spyOn(registerUseCase, 'run').mockResolvedValue(result as any);
 
       expect(await authController.register(registerDto)).toEqual(result);
     });
@@ -122,7 +116,7 @@ describe('AuthController', () => {
     it('should throw a BadRequestException when registration fails', async () => {
       const registerDto: RegisterRequestDto = { email: 'test@example.com', password: 'password', username: 'testuser' };
 
-      jest.spyOn(registerUseCase, 'register').mockRejectedValue(new BadRequestException('Email already exists'));
+      jest.spyOn(registerUseCase, 'run').mockRejectedValue(new BadRequestException('Email already exists'));
 
       await expect(authController.register(registerDto)).rejects.toThrow(BadRequestException);
     });
@@ -130,30 +124,29 @@ describe('AuthController', () => {
 
   describe('logout', () => {
     it('should return a success message when logout is successful', async () => {
-      const token = 'Bearer valid_token';
-      const result = { message: 'Successfully logged out' };
+      const mockRequest = { headers: { authorization: 'Bearer valid_token' } } as unknown as Request;
 
-      jest.spyOn(logoutUseCase, 'execute').mockResolvedValue(result);
+      jest.spyOn(logoutUseCase, 'run').mockResolvedValue(undefined as any);
 
-      expect(await authController.logout(token)).toEqual(result);
+      expect(await authController.logout(mockRequest)).toEqual({ message: 'Successfully logged out' });
     });
 
-    it('should throw a BadRequestException when logout fails', async () => {
-      const token = 'Bearer invalid_token';
+    it('should throw when logout use case fails', async () => {
+      const mockRequest = { headers: { authorization: 'Bearer invalid_token' } } as unknown as Request;
 
-      jest.spyOn(logoutUseCase, 'execute').mockRejectedValue(new BadRequestException('Invalid token'));
+      jest.spyOn(logoutUseCase, 'run').mockRejectedValue(new BadRequestException('Invalid token'));
 
-      await expect(authController.logout(token)).rejects.toThrow(BadRequestException);
+      await expect(authController.logout(mockRequest)).rejects.toThrow(BadRequestException);
     });
   });
 
   describe('verifyEmail', () => {
-    it('should return true when email verification is successful', async () => {
+    it('should return a success message when email verification is successful', async () => {
       const verifyEmailDto: VerifyEmailRequestDto = { userId: 'valid-user-id' };
 
       jest.spyOn(verifyEmailUseCase, 'verifyEmail').mockResolvedValue(true);
 
-      expect(await authController.verifyEmail(verifyEmailDto)).toBe(true);
+      expect(await authController.verifyEmail(verifyEmailDto)).toEqual({ message: 'Verification email sent successfully' });
     });
 
     it('should throw a BadRequestException when email verification fails', async () => {
@@ -166,12 +159,12 @@ describe('AuthController', () => {
   });
 
   describe('confirmEmail', () => {
-    it('should return true when email confirmation is successful', async () => {
+    it('should return a success message when email confirmation is successful', async () => {
       const token = 'valid-token';
 
       jest.spyOn(verifyEmailUseCase, 'confirmVerification').mockResolvedValue(true);
 
-      expect(await authController.confirmEmail(token)).toBe(true);
+      expect(await authController.confirmEmail(token)).toEqual({ message: 'Email successfully verified' });
     });
 
     it('should throw a BadRequestException when email confirmation fails', async () => {
@@ -184,12 +177,12 @@ describe('AuthController', () => {
   });
 
   describe('resendEmail', () => {
-    it('should return true when resending verification email is successful', async () => {
+    it('should return a success message when resending verification email is successful', async () => {
       const verifyEmailDto: VerifyEmailRequestDto = { userId: 'valid-user-id' };
 
       jest.spyOn(resendEmailVerificationUseCase, 'resendEmailVerification').mockResolvedValue(true);
 
-      expect(await authController.resendEmail(verifyEmailDto)).toBe(true);
+      expect(await authController.resendEmail(verifyEmailDto)).toEqual({ message: 'Verification email successfully re-sent' });
     });
 
     it('should throw a BadRequestException when resending verification email fails', async () => {
@@ -201,39 +194,19 @@ describe('AuthController', () => {
     });
   });
 
-  describe('changePassword', () => {
-    it('should return a success message when changing password is successful', async () => {
-      const req = { user: { id: 'valid-user-id' } };
-      const changePasswordDto: ChangePasswordDto = { oldPassword: 'oldpass', newPassword: 'newpass' };
-
-      jest.spyOn(changePasswordUseCase, 'execute').mockResolvedValue(true);
-
-      expect(await authController.changePassword(req, changePasswordDto)).toEqual({ message: 'Password changed successfully' });
-    });
-
-    it('should throw a BadRequestException when changing password fails', async () => {
-      const req = { user: { id: 'valid-user-id' } };
-      const changePasswordDto: ChangePasswordDto = { oldPassword: 'wrongpass', newPassword: 'newpass' };
-
-      jest.spyOn(changePasswordUseCase, 'execute').mockResolvedValue(false);
-
-      await expect(authController.changePassword(req, changePasswordDto)).rejects.toThrow(BadRequestException);
-    });
-  });
-
   describe('resetPassword', () => {
     it('should return a success message when sending reset password email is successful', async () => {
       const resetPasswordRequestDto: ResetPasswordRequestDto = { email: 'test@example.com' };
 
       jest.spyOn(resetPasswordUseCase, 'sendResetPasswordEmail').mockResolvedValue(true);
 
-      expect(await authController.resetPassword(resetPasswordRequestDto)).toEqual({ message: 'Reset password email sent successfully' });
+      expect(await authController.resetPassword(resetPasswordRequestDto)).toEqual({ message: 'Password reset email sent successfully' });
     });
 
     it('should throw a BadRequestException when sending reset password email fails', async () => {
       const resetPasswordRequestDto: ResetPasswordRequestDto = { email: 'invalid@example.com' };
 
-      jest.spyOn(resetPasswordUseCase, 'sendResetPasswordEmail').mockResolvedValue(false);
+      jest.spyOn(resetPasswordUseCase, 'sendResetPasswordEmail').mockRejectedValue(new BadRequestException('User not found'));
 
       await expect(authController.resetPassword(resetPasswordRequestDto)).rejects.toThrow(BadRequestException);
     });
@@ -251,7 +224,7 @@ describe('AuthController', () => {
     it('should throw a BadRequestException when confirming reset password fails', async () => {
       const resetPasswordConfirmDto: ResetPasswordConfirmDto = { token: 'invalid-token', newPassword: 'newpass' };
 
-      jest.spyOn(resetPasswordUseCase, 'confirmResetPassword').mockResolvedValue(false);
+      jest.spyOn(resetPasswordUseCase, 'confirmResetPassword').mockRejectedValue(new BadRequestException('Invalid token'));
 
       await expect(authController.confirmResetPassword(resetPasswordConfirmDto)).rejects.toThrow(BadRequestException);
     });

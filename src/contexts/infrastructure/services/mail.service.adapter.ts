@@ -13,6 +13,12 @@ export class ResendMailService implements MailService {
   }
 
   async send(mail: Mail): Promise<boolean> {
+    // Skip email sending when disabled (e.g. E2E testing, quota exhausted)
+    if (this.configService.get<string>('DISABLE_EMAILS') === 'true') {
+      console.log('[ResendMailService] Email sending disabled — skipping');
+      return true;
+    }
+
     try {
       const { data, error } = await this.resend.emails.send({
         from: `${mail.from.name} <${mail.from.email}>`,

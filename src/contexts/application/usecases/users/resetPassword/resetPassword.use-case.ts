@@ -76,7 +76,7 @@ export class ResetPasswordUseCase {
       await this.cacheManager.set(this.RESETS_KEY, resetsList);
 
       // Construct the reset password route with the token
-      const resetUrl = `${this.configService.get<string>('APP_URL')}/${route}?token=${token}`;
+      const resetUrl = `${this.configService.get<string>('FRONTEND_URL')}/auth/reset-password?token=${token}`;
 
       const userName = user.name || 'Dear User';
       const mailToSend: Mail = {

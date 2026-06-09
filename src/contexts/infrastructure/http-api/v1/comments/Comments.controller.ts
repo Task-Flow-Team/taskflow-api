@@ -22,7 +22,7 @@ export class CommentController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async createComment(
-    @UserDecorator('userId') userId: string,
+    @UserDecorator('id') userId: string,
     @Param('taskId') taskId: string,
     @Body() dto: CreateCommentDto,
   ) {

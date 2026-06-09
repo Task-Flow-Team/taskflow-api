@@ -9,3 +9,6 @@ export * from './getAllTasksOfUser/getAllTasksOfUser.use-case';
 export * from './getTaskById/getTaskById.use-case';
 export * from './searchTasks/searchTasks.use-case';
 export * from './updateTask/updateTask.use-case';
+export * from './exportTasksCsv/exportTasksCsv.use-case';
+export * from './addTagToTask/addTagToTask.use-case';
+export * from './removeTagFromTask/removeTagFromTask.use-case';

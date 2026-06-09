@@ -2,7 +2,7 @@ import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 
 // Decorador para obtener el usuario o una propiedad específica desde el payload del token
 export const User = createParamDecorator(
-  (data: 'userId' | 'email' | undefined, ctx: ExecutionContext) => {
+  (data: 'id' | 'userId' | 'email' | undefined, ctx: ExecutionContext) => {
     // Obtener la solicitud desde el contexto
     const request = ctx.switchToHttp().getRequest();
 

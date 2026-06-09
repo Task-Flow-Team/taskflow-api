@@ -168,43 +168,22 @@ export class PrismaTagRepository implements TagRepository {
     // Check if tag object is provided
     if(!tag) throw new BadRequestException('Tag Object is required');
 
-    // Check if workspaceId is provided in the Tag Object
-    if (!tag.workspace_id) throw new BadRequestException('Workspace ID in Tag Object is required');
-
-    // Check if userId is provided in the Tag Object
-    if (!tag.created_by) throw new BadRequestException('User ID in Tag Object is required');
-
-    // Check if name is provided in the Tag Object
-    if (!tag.name) throw new BadRequestException('Name in Tag Object is required');
-
-    // Check if color is provided in the Tag Object
-    if (!tag.color) throw new BadRequestException('Color in Tag Object is required');
-
-    // Check if workspace exists, if not throw an NotFoundException
-    const workspace = await this.db.workspace.findUnique({
-      where: { id: tag.workspace_id },
-    });
-    if (!workspace) throw new NotFoundException(`Workspace with ID ${tag.workspace_id} not found`);
-
-    // Check if user exists, if not throw an NotFoundException
-    const user = await this.db.user.findUnique({ where: { id: tag.created_by } });
-    if (!user) throw new NotFoundException(`User with ID ${tag.created_by} not found`);
-
-    //Check if the tag with the provided name already exists
-    const tagAlreadyExists = await this.db.tags.findFirst({
-      where: {
-        name: tag.name,
-        created_by: tag.created_by,
-      },
-    });
-    if(tagAlreadyExists) throw new AlreadyExistsException(`Tag with name ${tag.name} already exists`);
+    //Check if the tag with the provided name already exists (only when name is being updated)
+    if (tag.name) {
+      const tagAlreadyExists = await this.db.tags.findFirst({
+        where: {
+          name: tag.name,
+        },
+      });
+      if(tagAlreadyExists) throw new AlreadyExistsException(`Tag with name ${tag.name} already exists`);
+    }
 
     // Update the tag with the provided tagId and tag data
     const updatedTag = await this.db.tags.update({
       where: { tag_id: tagId },
       data: {
-        name: tag.name,
-        color: tag.color,
+        ...(tag.name && { name: tag.name }),
+        ...(tag.color && { color: tag.color }),
       },
     });
 

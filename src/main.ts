@@ -19,9 +19,10 @@ async function bootstrap() {
   // Configurar CORS
   app.enableCors({
     origin: [
-      'http://localhost:3000', // Tu aplicación
-      'http://localhost:4200', // Tu frontend (Angular o similar)
-      'http://localhost:3000/api/docs', // Swagger UI (aunque no es estrictamente necesario si está en el mismo servidor)
+      'http://localhost:3000',
+      'http://localhost:4200',
+      'http://localhost:5173',
+      'http://localhost:5174',
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Métodos permitidos
     credentials: true, // Permitir envío de cookies

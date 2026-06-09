@@ -86,7 +86,7 @@ export class UserController {
     @Post('change-password')
     @HttpCode(HttpStatus.OK)
     async changePassword(
-      @UserDecorator('userId') userId: string,
+      @UserDecorator('id') userId: string,
       @Body() changePasswordDto: AuthDtos.ChangePasswordDto,
     ): Promise<{ message: string }> {
         await this.changePasswordUseCase.run(
@@ -99,7 +99,7 @@ export class UserController {
 
     @Get('profile/me')
     @HttpCode(HttpStatus.OK)
-    async getUserProfile(@UserDecorator('userId') userId: string): Promise<UserProfile> {
+    async getUserProfile(@UserDecorator('id') userId: string): Promise<UserProfile> {
         if (!userId) throw new BadRequestException('User ID is required');
         return this.getProfileUseCase.run(userId);
     }
@@ -107,7 +107,7 @@ export class UserController {
     @Patch('profile/me')
     @HttpCode(HttpStatus.OK)
     async updateUserProfile(
-      @UserDecorator('userId') userId: string,
+      @UserDecorator('id') userId: string,
       @Body() profileDto: UpdateUserProfileDto,
     ): Promise<{ message: string; profile: UserProfile }> {
         if (!userId) {
@@ -129,7 +129,7 @@ export class UserController {
 
     @Patch('settings/me')
     @HttpCode(HttpStatus.OK)
-    async updateUserSettings(@UserDecorator('userId') userId: string, @Body() settingsDto: UpdateUserSettingsDto): Promise<{ message: string; settings: any }> {
+    async updateUserSettings(@UserDecorator('id') userId: string, @Body() settingsDto: UpdateUserSettingsDto): Promise<{ message: string; settings: any }> {
         if (!userId) throw new BadRequestException('User ID is required');
         const updatedSettings = await this.updateSettingsUseCase.run(userId, settingsDto as any);
         return {

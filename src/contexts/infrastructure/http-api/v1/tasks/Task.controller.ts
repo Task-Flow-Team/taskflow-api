@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query, HttpStatus, HttpCode, BadRequestException, UseGuards, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, HttpStatus, HttpCode, BadRequestException, UseGuards, ForbiddenException, NotFoundException, Header } from '@nestjs/common';
 import { AssignTaskDto, UpdateTaskDto, CreateTaskDto, FilterTasksDto } from '@/contexts/infrastructure/http-api/v1/tasks/dtos';
 import { API_VERSION } from '@/contexts/infrastructure/http-api/v1/';
 import * as TaskUseCases from '@/contexts/application/usecases/tasks';
@@ -25,12 +25,15 @@ export class TaskController {
     private readonly getTaskByIdUseCase: TaskUseCases.GetTaskByIdUseCase,
     private readonly assignTaskUseCase: TaskUseCases.AssignTaskUseCase,
     private readonly searchTasksUseCase: TaskUseCases.SearchTasksUseCase,
+    private readonly exportTasksCsvUseCase: TaskUseCases.ExportTasksCsvUseCase,
+    private readonly addTagToTaskUseCase: TaskUseCases.AddTagToTaskUseCase,
+    private readonly removeTagFromTaskUseCase: TaskUseCases.RemoveTagFromTaskUseCase,
   ) {}
 
   // Create a new task
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async createTask(@UserDecorator('userId') userId: string, @Body() taskDto: CreateTaskDto) {
+  async createTask(@UserDecorator('id') userId: string, @Body() taskDto: CreateTaskDto) {
     const task = await this.createTaskUseCase.run(userId, taskDto);
     return {
       message: 'Task created successfully',
@@ -41,7 +44,7 @@ export class TaskController {
   // Get all tasks assigned to a user (userId from JWT — IDOR fix)
   @Get('assigned-to')
   @HttpCode(HttpStatus.OK)
-  async getAllTasksAssignedToUser(@UserDecorator('userId') userId: string): Promise<Task[]> {
+  async getAllTasksAssignedToUser(@UserDecorator('id') userId: string): Promise<Task[]> {
     return await this.getAllTasksAssignedToUserUseCase.run(userId);
   }
 
@@ -70,14 +73,14 @@ export class TaskController {
   // Get all tasks created by a user (userId from JWT — IDOR fix)
   @Get('created-by')
   @HttpCode(HttpStatus.OK)
-  async getAllTasksCreatedByUser(@UserDecorator('userId') userId: string): Promise<Task[]> {
+  async getAllTasksCreatedByUser(@UserDecorator('id') userId: string): Promise<Task[]> {
     return await this.getAllTasksCreatedByUserUseCase.run(userId);
   }
 
   // Get all tasks of a user (userId from JWT — IDOR fix)
   @Get('of')
   @HttpCode(HttpStatus.OK)
-  async getAllTasksOfUser(@UserDecorator('userId') userId: string): Promise<Task[]> {
+  async getAllTasksOfUser(@UserDecorator('id') userId: string): Promise<Task[]> {
     return await this.getAllTasksOfUserUseCase.run(userId);
   }
 
@@ -87,6 +90,16 @@ export class TaskController {
   @HttpCode(HttpStatus.OK)
   async getAllTasks(): Promise<Task[]> {
     return await this.getAllTasksUseCase.run();
+  }
+
+  // Export all tasks of a workspace as CSV
+  @Get('workspace/:workspaceId/export')
+  @UseGuards(WorkspaceMemberGuard)
+  @HttpCode(HttpStatus.OK)
+  @Header('Content-Type', 'text/csv; charset=utf-8')
+  @Header('Content-Disposition', 'attachment; filename="tasks.csv"')
+  async exportTasksCsv(@Param('workspaceId') workspaceId: string): Promise<string> {
+    return this.exportTasksCsvUseCase.run(workspaceId);
   }
 
   // Get a unique task by Id
@@ -99,7 +112,7 @@ export class TaskController {
   // Update an existing task
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
-  async updateTask(@UserDecorator('userId') userId: string, @Param('id') taskId: string, @Body() taskDto: UpdateTaskDto) {
+  async updateTask(@UserDecorator('id') userId: string, @Param('id') taskId: string, @Body() taskDto: UpdateTaskDto) {
     const updatedTask = await this.updateTaskUseCase.run(userId, taskId, taskDto);
     return {
       message: 'Task updated successfully',
@@ -111,7 +124,7 @@ export class TaskController {
   @Patch(':id/assign')
   @HttpCode(HttpStatus.OK)
   async assignTask(
-    @UserDecorator('userId') userId: string,
+    @UserDecorator('id') userId: string,
     @Param('id') taskId: string,
     @Body() dto: AssignTaskDto,
   ) {
@@ -123,7 +136,7 @@ export class TaskController {
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
   async deleteTask(
-    @UserDecorator('userId') userId: string,
+    @UserDecorator('id') userId: string,
     @Param('id') taskId: string,
   ) {
     const task = await this.getTaskByIdUseCase.run(taskId);
@@ -133,5 +146,23 @@ export class TaskController {
     return {
       message: 'Task deleted successfully',
     };
+  }
+
+  @Post(':taskId/tags')
+  @HttpCode(HttpStatus.CREATED)
+  async addTag(
+    @Param('taskId') taskId: string,
+    @Body() body: { tagId: string },
+  ) {
+    return this.addTagToTaskUseCase.run(taskId, body.tagId);
+  }
+
+  @Delete(':taskId/tags/:tagId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async removeTag(
+    @Param('taskId') taskId: string,
+    @Param('tagId') tagId: string,
+  ): Promise<void> {
+    return this.removeTagFromTaskUseCase.run(taskId, tagId);
   }
 }

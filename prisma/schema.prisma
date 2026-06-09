@@ -45,6 +45,7 @@ model User {
   accounts            Account[]
   sessions            Session[]
   verificationTokens  VerificationToken[]
+  reminders           Reminders[]
 }
 
 model Workspace {
@@ -146,9 +147,12 @@ model TaskTags {
 model Reminders {
   reminder_id   String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   task_id       String   @db.Uuid
+  user_id       String   @db.Uuid
   reminder_time DateTime
   reminder_type String?  @db.VarChar(50)
+  is_sent       Boolean  @default(false)
   task          Task     @relation(fields: [task_id], references: [task_id])
+  user          User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 model Notifications {

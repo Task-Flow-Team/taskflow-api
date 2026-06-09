@@ -25,7 +25,7 @@ export class NotificationsController {
 
   @Get('me')
   @HttpCode(HttpStatus.OK)
-  async getMyNotifications(@UserDecorator('userId') userId: string) {
+  async getMyNotifications(@UserDecorator('id') userId: string) {
     return await this.getUserNotificationsUseCase.run(userId);
   }
 

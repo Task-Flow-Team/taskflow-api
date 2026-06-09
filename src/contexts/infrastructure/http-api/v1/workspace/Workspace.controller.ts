@@ -30,7 +30,7 @@ export class WorkspaceController {
   // Create workspace route
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async createWorkspace(@UserDecorator('userId') userId: string, @Body() workspaceDto: CreateWorkspaceDto) {
+  async createWorkspace(@UserDecorator('id') userId: string, @Body() workspaceDto: CreateWorkspaceDto) {
     const workspace = await this.createWorkspaceUseCase.run(userId, workspaceDto.name, workspaceDto.description);
     return {
       message: 'Workspace created successfully',
@@ -50,7 +50,7 @@ export class WorkspaceController {
   @Get('my-workspaces')
   @HttpCode(HttpStatus.OK)
   async getMyWorkspaces(
-    @UserDecorator('userId') userId: string,
+    @UserDecorator('id') userId: string,
     @Query('cursor') cursor?: string,
     @Query('limit') limit?: string,
   ) {

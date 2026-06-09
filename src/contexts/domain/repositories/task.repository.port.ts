@@ -1,4 +1,4 @@
-import { Task } from "@/contexts/domain/models";
+import { Task, TaskTags } from "@/contexts/domain/models";
 import { FilterTasksDto } from '@/contexts/infrastructure/http-api/v1/tasks/dtos';
 import { PaginatedResponse } from '@/contexts/shared/pagination.types';
 
@@ -159,4 +159,16 @@ export abstract class TaskRepository {
      * @throws ForbiddenException If the user is not authorized to update the task or hasn't admin role in the workspace.
      */
     abstract updateTask(userId: string, taskId: string, task: Partial<Task>): Promise<Task>;
+
+    /**
+     * Method for getting all tasks in a workspace without pagination (used for exports)
+     *
+     * @param workspaceId - The ID of the workspace.
+     *
+     * @returns {Promise<Task[]>} All tasks in the workspace.
+     */
+    abstract findAllByWorkspace(workspaceId: string): Promise<Task[]>;
+
+    abstract addTagToTask(taskId: string, tagId: string): Promise<TaskTags>;
+    abstract removeTagFromTask(taskId: string, tagId: string): Promise<void>;
 }

@@ -10,7 +10,7 @@ export type AccessToken = {
 };
 
 export type AccessTokenPayload = {
-  userId: string;
+  id: string;
   email: string;
   roles: string[];
 };
@@ -19,6 +19,7 @@ export interface RegisterRequestBody {
     username: string,
     email: string,
     password: string,
+    name?: string,
 }
 
 export interface LoginRequestBody {

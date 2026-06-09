@@ -18,12 +18,20 @@ export class RegisterRequestDto {
   email: string;
 
   @ApiProperty({
-    description: 'Contraseña del usuario, debe tener al menos 6 caracteres.',
+    description: 'Contraseña del usuario, debe tener al menos 8 caracteres.',
     example: 'Password123!',
   })
   @IsString()
-  @MinLength(6, { message: 'La contraseña debe tener al menos 6 caracteres.' })
+  @MinLength(8, { message: 'La contraseña debe tener al menos 8 caracteres.' })
   password: string;
+
+  @ApiPropertyOptional({
+    description: 'Nombre completo del usuario.',
+    example: 'Juan Pérez',
+  })
+  @IsOptional()
+  @IsString()
+  name?: string;
 
   @ApiPropertyOptional({
     description: 'Preferencia de idioma del usuario.',
