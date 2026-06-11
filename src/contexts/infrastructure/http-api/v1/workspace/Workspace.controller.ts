@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query, HttpStatus, HttpCode, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, HttpStatus, HttpCode, UseGuards, BadRequestException, NotFoundException } from '@nestjs/common';
 import { CreateWorkspaceDto, UpdateWorkspaceDto, AddCollaboratorDto } from '@/contexts/infrastructure/http-api/v1/workspace/dtos';
 import { API_VERSION } from '@/contexts/infrastructure/http-api/v1/';
 import * as WorkspaceUseCases from '@/contexts/application/usecases/workspaces';
+import { getUserByEmailUseCase } from '@/contexts/application/usecases/users';
 import { User as UserDecorator, Roles } from '@/contexts/shared/lib/decorators';
 import { JwtAuthGuard, WorkspaceMemberGuard } from '@/contexts/shared/lib/guards';
 import { Workspace } from '@/contexts/domain/models';
@@ -25,6 +26,7 @@ export class WorkspaceController {
     private readonly getCollaboratorsUseCase: WorkspaceUseCases.GetCollaboratorsUseCase,
     private readonly deleteCollaboratorUseCase: WorkspaceUseCases.DeleteCollaboratorUseCase,
     private readonly getActivityByWorkspaceUseCase: WorkspaceUseCases.GetActivityByWorkspaceUseCase,
+    private readonly getUserByEmailUseCase: getUserByEmailUseCase,
   ) {}
 
   // Create workspace route
@@ -91,8 +93,8 @@ export class WorkspaceController {
   @Patch(':id')
   @UseGuards(WorkspaceMemberGuard)
   @HttpCode(HttpStatus.OK)
-  async updateWorkspace(@Param('id') workspaceId: string, @Body() workspaceDto: UpdateWorkspaceDto) {
-    const updatedWorkspace = await this.updateWorkspaceUseCase.run(workspaceId, workspaceDto as any);
+  async updateWorkspace(@UserDecorator('id') userId: string, @Param('id') workspaceId: string, @Body() workspaceDto: UpdateWorkspaceDto) {
+    const updatedWorkspace = await this.updateWorkspaceUseCase.run(userId, workspaceId, workspaceDto as any);
     return {
       message: 'Workspace updated successfully',
       workspace: updatedWorkspace,
@@ -110,19 +112,38 @@ export class WorkspaceController {
     };
   }
 
-  // Add a collaborator to a workspace
+  // Add a collaborator to a workspace (by userId or email)
   @Post(':id/collaborators')
   @UseGuards(WorkspaceMemberGuard)
   @HttpCode(HttpStatus.CREATED)
-  async addCollaborator(@Param('id') workspaceId: string, @Body() dto: AddCollaboratorDto) {
-    const collaborator = await this.addCollaboratorUseCase.run(workspaceId, dto.userId);
+  async addCollaborator(
+    @UserDecorator('id') currentUserId: string,
+    @Param('id') workspaceId: string,
+    @Body() dto: AddCollaboratorDto,
+  ) {
+    let userId = dto.userId;
+
+    // If email provided instead of userId, resolve it
+    if (!userId && dto.email) {
+      const user = await this.getUserByEmailUseCase.run(dto.email);
+      if (!user) {
+        throw new NotFoundException(`User with email ${dto.email} not found`);
+      }
+      userId = user.id;
+    }
+
+    if (!userId) {
+      throw new BadRequestException('Either userId or email is required');
+    }
+
+    const collaborator = await this.addCollaboratorUseCase.run(workspaceId, userId, currentUserId);
     return {
       message: 'Collaborator added successfully',
       collaborator,
     };
   }
 
-  // Get all collaborators of a workspace
+  // Get all members of a workspace (owner + collaborators)
   @Get(':id/collaborators')
   @UseGuards(WorkspaceMemberGuard)
   @HttpCode(HttpStatus.OK)
@@ -135,8 +156,8 @@ export class WorkspaceController {
   @Delete(':id/collaborators/:userId')
   @UseGuards(WorkspaceMemberGuard)
   @HttpCode(HttpStatus.OK)
-  async removeCollaborator(@Param('id') workspaceId: string, @Param('userId') userId: string) {
-    await this.deleteCollaboratorUseCase.run(workspaceId, userId);
+  async removeCollaborator(@UserDecorator('id') requesterId: string, @Param('id') workspaceId: string, @Param('userId') userId: string) {
+    await this.deleteCollaboratorUseCase.run(workspaceId, userId, requesterId);
     return {
       message: 'Collaborator removed succesfully',
     };

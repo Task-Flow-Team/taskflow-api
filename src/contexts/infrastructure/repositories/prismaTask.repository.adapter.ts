@@ -55,6 +55,12 @@ export class PrismaTaskRepository implements TaskRepository {
         take: limit + 1,
         ...(cursor && { cursor: { task_id: cursor }, skip: 1 }),
         orderBy: { created_at: 'desc' },
+        include: {
+          group: true,
+          timeEntries: {
+            select: { duration: true },
+          },
+        },
       }),
       this.db.task.count({ where }),
     ]);
@@ -174,6 +180,8 @@ export class PrismaTaskRepository implements TaskRepository {
         priority: task.priority,
         due_date: task.due_date,
         assignedTo: task.assignedTo,
+        group_id: task.group_id ?? undefined,
+        start_date: task.start_date ?? undefined,
       },
     });
 
@@ -254,6 +262,8 @@ export class PrismaTaskRepository implements TaskRepository {
         due_date: task.due_date,
         assignedTo: task.assignedTo,
         completed_at: task.completed_at,
+        ...(task.group_id !== undefined && { group_id: task.group_id }),
+        ...(task.start_date !== undefined && { start_date: task.start_date }),
       },
     });
 

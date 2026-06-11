@@ -41,6 +41,16 @@ export class PrismaCommentRepository implements CommentRepository {
         take: limit + 1,
         ...(decodedCursor && { cursor: { comment_id: decodedCursor }, skip: 1 }),
         orderBy: { created_at: 'asc' },
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              name: true,
+              profile_picture_url: true,
+            },
+          },
+        },
       }),
       this.db.comment.count({ where: { task_id: taskId } }),
     ]);

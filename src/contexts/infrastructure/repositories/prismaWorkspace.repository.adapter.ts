@@ -125,13 +125,45 @@ export class PrismaWorkspaceRepository implements WorkspaceRepository {
     const workspace = await this.db.workspace.findUnique({ where: { id: workspaceId } });
     if(!workspace) throw new NotFoundException(`Workspace with ID ${workspaceId} not found`);
 
-    // Find all collaborators in the workspace with the provided workspaceId
-    const collaborators = await this.db.workspaceCollaborator.findMany({
-      where: { workspace_id: workspaceId },
+    // Get the owner's user data
+    const ownerUser = await this.db.user.findUnique({
+      where: { id: workspace.user_id },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        name: true,
+        profile_picture_url: true,
+      },
     });
 
-    // Return the collaborators in the workspace
-    return collaborators;
+    // Find all collaborators in the workspace with the provided workspaceId
+    // Include user data so the frontend can display names, emails, avatars
+    const collaborators = await this.db.workspaceCollaborator.findMany({
+      where: { workspace_id: workspaceId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+            name: true,
+            profile_picture_url: true,
+          },
+        },
+      },
+    });
+
+    // Build owner entry with same shape as collaborators and prepend it
+    const ownerEntry = {
+      collaborator_id: workspace.user_id,
+      workspace_id: workspaceId,
+      role: 'owner',
+      added_at: workspace.created_at,
+      user: ownerUser,
+    };
+
+    return [ownerEntry, ...collaborators] as any;
   }
 
   async createWorkspace(

@@ -219,26 +219,23 @@ export class PrismaSubTaskRepository implements SubTaskRepository {
     // Check if subTask object is provided
     if(!subTask) throw new BadRequestException('SubTask Object is required');
 
-    // Check if parent task is provided in the SubTask Object
-    if (!subTask.task_id) throw new BadRequestException('Parent Task ID in SubTask Object is required');
+    // Fetch the existing subtask to get task_id and createdBy
+    const existing = await this.db.subtasks.findUnique({ where: { subtask_id: subTaskId } });
+    if (!existing) throw new NotFoundException(`SubTask with ID ${subTaskId} not found`);
 
-    // Check if user exists, if not throw an NotFoundException
-    const user = await this.db.user.findUnique({ where: { id: subTask.createdBy } });
-    if (!user) throw new NotFoundException(`User with ID ${subTask.createdBy} not found`);
+    // Use existing subtask's createdBy for user validation
+    const user = await this.db.user.findUnique({ where: { id: existing.createdBy } });
+    if (!user) throw new NotFoundException(`User with ID ${existing.createdBy} not found`);
 
-    // Check if the parent task exists, if not throw a Not Found Exception
-    const parentTask = await this.db.task.findUnique({where: {task_id: subTask.task_id}})
-    if(!parentTask) throw new NotFoundException(`Parent Task with ID ${subTask.task_id} not found`);
+    // Use existing subtask's task_id for parent task validation
+    const parentTask = await this.db.task.findUnique({where: {task_id: existing.task_id}})
+    if(!parentTask) throw new NotFoundException(`Parent Task with ID ${existing.task_id} not found`);
 
     // Check if workspace exists, if not throw an NotFoundException
     const workspace = await this.db.workspace.findUnique({
       where: { id: parentTask.workspace_id },
     });
     if (!workspace) throw new NotFoundException(`Workspace with ID ${parentTask.workspace_id} not found`);
-
-    // Check if task exists, if not throw an NotFoundException
-    const subTaskToUpdate = await this.db.subtasks.findUnique({ where: { subtask_id: subTaskId } });
-    if (!subTaskToUpdate) throw new NotFoundException(`SubTask with ID ${subTaskId} not found`);
 
     // Update the sub task
     const updatedSubTask = await this.db.subtasks.update({

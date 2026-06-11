@@ -37,6 +37,7 @@ model User {
   collaborations      WorkspaceCollaborator[]
   assignedSubtasks    Subtasks[]  @relation("AssignedSubtasks")
   createdSubtasks     Subtasks[]  @relation("CreatedSubtasks")
+  timeEntries         TimeEntry[]
   tags                Tags[]
   notifications       Notifications[]
   activityLogs        ActivityLogs[]
@@ -61,6 +62,7 @@ model Workspace {
   collaborators  WorkspaceCollaborator[]
   tags           Tags[]
   activityLogs   ActivityLogs[]
+  taskGroups     TaskGroup[]
 }
 
 model Task {
@@ -79,10 +81,14 @@ model Task {
   user         User      @relation("CreatedTasks", fields: [createdBy], references: [id])
   assignedUser User?     @relation("AssignedTasks", fields: [assignedTo], references: [id])
   workspace    Workspace @relation(fields: [workspace_id], references: [id])
+  group_id     String?    @db.Uuid
+  start_date   DateTime?
   subtasks     Subtasks[]
   taskTags     TaskTags[]
   reminders    Reminders[]
   comments     Comment[]
+  group        TaskGroup? @relation(fields: [group_id], references: [group_id], onDelete: SetNull)
+  timeEntries  TimeEntry[]
 
   @@index([workspace_id])
   @@index([assignedTo])
@@ -239,4 +245,33 @@ model Account {
 
   @@unique([provider, providerAccountId])
   @@id([id, userId])
+}
+
+model TaskGroup {
+  group_id     String   @id @default(uuid()) @db.Uuid
+  workspace_id String   @db.Uuid
+  name         String   @db.VarChar(100)
+  color        String   @db.VarChar(20)
+  position     Int      @default(0)
+  created_at   DateTime @default(now())
+  workspace    Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  tasks        Task[]
+
+  @@index([workspace_id])
+}
+
+model TimeEntry {
+  entry_id    String    @id @default(uuid()) @db.Uuid
+  task_id     String    @db.Uuid
+  user_id     String    @db.Uuid
+  start_time  DateTime  @default(now())
+  end_time    DateTime?
+  duration    Int?
+  description String?   @db.Text
+  created_at  DateTime  @default(now())
+  task        Task      @relation(fields: [task_id], references: [task_id], onDelete: Cascade)
+  user        User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([task_id])
+  @@index([user_id])
 }

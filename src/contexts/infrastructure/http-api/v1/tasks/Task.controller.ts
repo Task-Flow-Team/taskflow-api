@@ -151,18 +151,20 @@ export class TaskController {
   @Post(':taskId/tags')
   @HttpCode(HttpStatus.CREATED)
   async addTag(
+    @UserDecorator('id') userId: string,
     @Param('taskId') taskId: string,
     @Body() body: { tagId: string },
   ) {
-    return this.addTagToTaskUseCase.run(taskId, body.tagId);
+    return this.addTagToTaskUseCase.run(userId, taskId, body.tagId);
   }
 
   @Delete(':taskId/tags/:tagId')
   @HttpCode(HttpStatus.NO_CONTENT)
   async removeTag(
+    @UserDecorator('id') userId: string,
     @Param('taskId') taskId: string,
     @Param('tagId') tagId: string,
   ): Promise<void> {
-    return this.removeTagFromTaskUseCase.run(taskId, tagId);
+    return this.removeTagFromTaskUseCase.run(userId, taskId, tagId);
   }
 }

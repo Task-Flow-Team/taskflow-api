@@ -18,9 +18,21 @@ import { CreateReminderUseCase } from '@/contexts/application/usecases/reminders
 import { ListRemindersUseCase } from '@/contexts/application/usecases/reminders/listReminders/listReminders.use-case';
 import { DeleteReminderUseCase } from '@/contexts/application/usecases/reminders/deleteReminder/deleteReminder.use-case';
 
+import { IsUUID, IsDateString, IsOptional, IsString } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+
 export class CreateReminderDto {
+  @ApiProperty({ description: 'UUID of the task' })
+  @IsUUID()
   task_id!: string;
+
+  @ApiProperty({ description: 'Reminder date/time in ISO 8601 format' })
+  @IsDateString()
   reminder_time!: string;
+
+  @ApiPropertyOptional({ description: 'Type of reminder' })
+  @IsOptional()
+  @IsString()
   reminder_type?: string;
 }
 

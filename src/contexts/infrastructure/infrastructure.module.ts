@@ -9,10 +9,12 @@ import { AnalyticsController } from './http-api/v1/analytics/Analytics.controlle
 import { RemindersController } from './http-api/v1/reminders/Reminders.controller';
 import { ReminderCronJob } from './cron/ReminderCronJob';
 import { HealthController } from './http-api/v1/health/Health.controller';
+import { GroupsController } from './http-api/v1/groups/Groups.controller';
+import { TimeEntriesController } from './http-api/v1/time-entries/TimeEntries.controller';
 
 @Module({
   imports: [ApplicationModule],
-  controllers: [AuthController, UserController, WorkspaceController, TaskController, SubTaskController, TagController, CommentController, NotificationsController, AnalyticsController, RemindersController, HealthController],
+  controllers: [AuthController, UserController, WorkspaceController, TaskController, SubTaskController, TagController, CommentController, NotificationsController, AnalyticsController, RemindersController, HealthController, GroupsController, TimeEntriesController],
   providers: [
     JwtService,
     PrismaService,

@@ -7,3 +7,5 @@ export * from './tag.repository.port';
 export * from './task.repository.port';
 export * from './user.repository.port';
 export * from './workspace.repository.port';
+export * from './taskGroup.repository.port';
+export * from './timeEntry.repository.port';

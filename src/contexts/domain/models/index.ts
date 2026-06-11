@@ -9,3 +9,5 @@ export * from './tags.entity';
 export * from './task.entity';
 export * from './user.entity';
 export * from './workspace.entity';
+export * from './taskGroup.entity';
+export * from './timeEntry.entity';

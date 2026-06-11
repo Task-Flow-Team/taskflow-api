@@ -3,6 +3,7 @@ import { TaskRepository } from '@/contexts/domain/repositories/task.repository.p
 import { WorkspaceRepository } from '@/contexts/domain/repositories/workspace.repository.port';
 import { NotificationRepository } from '@/contexts/domain/repositories/notification.repository.port';
 import { UserRepository } from '@/contexts/domain/repositories/user.repository.port';
+import { ActivityLogRepository } from '@/contexts/domain/repositories/activityLog.repository.port';
 import { MailService } from '@/contexts/domain/services';
 import { Task } from '@/contexts/domain/models';
 import { ConfigService } from '@nestjs/config';
@@ -15,6 +16,7 @@ export class AssignTaskUseCase {
     @Inject('workspaceRepository') private workspaceRepository: WorkspaceRepository,
     @Inject('notificationRepository') private notificationRepository: NotificationRepository,
     @Inject('userRepository') private userRepository: UserRepository,
+    @Inject('activityLogRepository') private activityLogRepository: ActivityLogRepository,
     @Inject('mailService') private mailService: MailService,
     @Inject('configService') private configService: ConfigService,
   ) {}
@@ -43,6 +45,8 @@ export class AssignTaskUseCase {
 
     // Update the task with the new assignee
     const updatedTask = await this.taskRepository.updateTask(requesterId, taskId, { assignedTo: assigneeId });
+
+    void this.activityLogRepository.logActivity(requesterId, task.workspace_id, 'task:assigned');
 
     // Fire-and-forget: in-app notification
     void this.notificationRepository.create({

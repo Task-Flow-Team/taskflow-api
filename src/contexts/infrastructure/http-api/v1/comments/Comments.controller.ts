@@ -58,8 +58,12 @@ export class CommentController {
 
   @Delete(':commentId')
   @HttpCode(HttpStatus.OK)
-  async deleteComment(@Param('commentId') commentId: string) {
-    await this.deleteCommentUseCase.run(commentId);
+  async deleteComment(
+    @UserDecorator('id') userId: string,
+    @Param('taskId') taskId: string,
+    @Param('commentId') commentId: string,
+  ) {
+    await this.deleteCommentUseCase.run(userId, taskId, commentId);
     return { message: 'Comment deleted successfully' };
   }
 }

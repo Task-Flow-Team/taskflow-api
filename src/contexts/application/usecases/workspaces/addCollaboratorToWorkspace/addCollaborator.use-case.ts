@@ -1,17 +1,23 @@
 import { WorkspaceCollaborator } from "@/contexts/domain/models";
 import { WorkspaceRepository } from "@/contexts/domain/repositories";
+import { ActivityLogRepository } from "@/contexts/domain/repositories/activityLog.repository.port";
 import { Inject, Injectable } from "@nestjs/common";
 
 @Injectable()
 export class AddCollaboratorUseCase {
 
-    // This constructor takes a workspaceRepository as a dependency
-    constructor(@Inject('workspaceRepository') private workspaceRepository: WorkspaceRepository){}
+    constructor(
+        @Inject('workspaceRepository') private workspaceRepository: WorkspaceRepository,
+        @Inject('activityLogRepository') private activityLogRepository: ActivityLogRepository,
+    ) {}
 
-    // This function takes a workspaceId as a parameter, a userId and returns the workspaceCollaborator object created
-    async run(workspaceId: string, userId: string): Promise<WorkspaceCollaborator>{
+    async run(workspaceId: string, userId: string, addedByUserId?: string): Promise<WorkspaceCollaborator> {
+        const collaborator = await this.workspaceRepository.addCollaboratorToWorkspace(workspaceId, userId);
 
-        // Call the repository method to add in the workspace provided a new collaborator
-        return await this.workspaceRepository.addCollaboratorToWorkspace(workspaceId, userId);
+        // Log the activity
+        const actorId = addedByUserId ?? userId;
+        void this.activityLogRepository.logActivity(actorId, workspaceId, 'collaborator:added');
+
+        return collaborator;
     }
 }

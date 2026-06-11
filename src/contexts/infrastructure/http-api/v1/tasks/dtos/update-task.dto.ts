@@ -51,4 +51,20 @@ export class UpdateTaskDto {
   @IsOptional()
   @IsUUID()
   assignedTo?: string;
+
+  @ApiPropertyOptional({
+    description: 'UUID del grupo al que pertenece la tarea.',
+    example: '550e8400-e29b-41d4-a716-446655440444',
+  })
+  @IsOptional()
+  @IsUUID()
+  group_id?: string;
+
+  @ApiPropertyOptional({
+    description: 'Fecha de inicio de la tarea en formato ISO 8601.',
+    example: '2025-01-15T09:00:00Z',
+  })
+  @IsOptional()
+  @IsDateString()
+  start_date?: Date;
 }

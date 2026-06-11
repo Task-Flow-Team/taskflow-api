@@ -3,6 +3,7 @@ import { CommentRepository } from '@/contexts/domain/repositories/comment.reposi
 import { TaskRepository } from '@/contexts/domain/repositories/task.repository.port';
 import { NotificationRepository } from '@/contexts/domain/repositories/notification.repository.port';
 import { UserRepository } from '@/contexts/domain/repositories/user.repository.port';
+import { ActivityLogRepository } from '@/contexts/domain/repositories/activityLog.repository.port';
 import { Comment } from '@/contexts/domain/models/comment.entity';
 
 @Injectable()
@@ -12,10 +13,23 @@ export class CreateCommentUseCase {
     @Inject('taskRepository') private taskRepository: TaskRepository,
     @Inject('notificationRepository') private notificationRepository: NotificationRepository,
     @Inject('userRepository') private userRepository: UserRepository,
+    @Inject('activityLogRepository') private activityLogRepository: ActivityLogRepository,
   ) {}
 
   async run(userId: string, taskId: string, content: string): Promise<Comment> {
     const comment = await this.commentRepository.createComment(userId, taskId, content);
+
+    // Log activity — fire-and-forget
+    void (async () => {
+      try {
+        const task = await this.taskRepository.getTaskById(taskId);
+        if (task?.workspace_id) {
+          void this.activityLogRepository.logActivity(userId, task.workspace_id, 'comment:created');
+        }
+      } catch (error) {
+        console.error('[CreateCommentUseCase] Failed to log activity:', error);
+      }
+    })();
 
     // Fire-and-forget: notify assignee if the task has one and commenter is not the assignee
     void (async () => {

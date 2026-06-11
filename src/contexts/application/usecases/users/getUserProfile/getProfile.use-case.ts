@@ -16,6 +16,7 @@ export class GetProfileUseCase {
 
     // Return only the user profile
     return {
+      id: user.id,
       username: user.username,
       email: user.email,
       name: user.name,

@@ -90,8 +90,8 @@ export class TagController {
   // Delete a tag by id
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
-  async deleteTag(@Param('id') tagId: string) {
-    await this.deleteTagUseCase.run(tagId);
+  async deleteTag(@UserDecorator('id') userId: string, @Param('id') tagId: string) {
+    await this.deleteTagUseCase.run(userId, tagId);
     return {
       message: 'Tag deleted successfully',
     };
