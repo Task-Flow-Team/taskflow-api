@@ -17,7 +17,7 @@ import * as services from '@/contexts/infrastructure/services';
 import { JwtStrategy, LocalStrategy } from '@/contexts/shared/lib/strategy';
 import { PrismaService } from '@/contexts/shared/prisma/prisma.service';
 import { ConfigService, ConfigModule } from '@nestjs/config';
-import { redisStore } from 'cache-manager-redis-yet';
+import { createKeyv } from '@keyv/redis';
 import { CacheModule } from '@nestjs/cache-manager';
 import { PassportModule } from '@nestjs/passport';
 import { Module } from '@nestjs/common';
@@ -37,10 +37,8 @@ import { JwtModule } from '@nestjs/jwt';
     }),
     CacheModule.registerAsync({
       isGlobal: true,
-      useFactory: async (configService: ConfigService) => ({
-        store: await redisStore({
-          url: configService.get('REDIS_URL')
-        }),
+      useFactory: (configService: ConfigService) => ({
+        stores: [createKeyv(configService.get('REDIS_URL'))],
       }),
       inject: [ConfigService],
     }),
