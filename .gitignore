@@ -19,6 +19,8 @@ pids/
 *.pid
 *.seed
 *.pid.lock
+*.lock
+package-lock.json
 
 # Temporary files
 tmp/
