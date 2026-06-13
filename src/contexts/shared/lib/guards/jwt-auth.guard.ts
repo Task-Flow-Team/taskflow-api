@@ -25,6 +25,10 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   // This method is used to check if the route is public or not
   async canActivate(context: ExecutionContext): Promise<boolean> {
 
+    // Allow CORS preflight requests to pass through
+    const request = context.switchToHttp().getRequest();
+    if (request.method === 'OPTIONS') return true;
+
     // Get the isPublic value from the metadata with reflector
     const isPublic = this.reflector.getAllAndOverride('isPublic', [
 
