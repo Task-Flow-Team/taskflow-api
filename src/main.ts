@@ -23,6 +23,7 @@ async function bootstrap() {
       'http://localhost:4200',
       'http://localhost:5173',
       'http://localhost:5174',
+      'https://taskflow-web-v2-production.up.railway.app',
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Métodos permitidos
     credentials: true, // Permitir envío de cookies
