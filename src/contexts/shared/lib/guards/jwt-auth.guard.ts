@@ -47,9 +47,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     // If the token is not valid, we return false
     if (!canActivate) return false;
 
-    // Get the request from the context
-    const request = context.switchToHttp().getRequest();
-
     // Get the token from the request headers
     const token = this.extractTokenFromHeader(request);
 
